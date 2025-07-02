@@ -88,10 +88,12 @@ export async function GET(request: NextRequest) {
 
     const { data: allScores, error: scoresError } = await scoresQuery;
 
+    console.log('Scores query result:', { allScores, scoresError });
+
     if (scoresError) {
       console.error('Scores query error:', scoresError);
       return NextResponse.json(
-        { error: 'Failed to fetch scores' },
+        { error: 'Failed to fetch scores', details: scoresError },
         { status: 500 }
       );
     }
@@ -112,10 +114,13 @@ export async function GET(request: NextRequest) {
     // Fetch profiles for these users
     let profilesData: Array<{ id: string; email: string; username: string | null }> = [];
     if (userIds.length > 0) {
+      console.log('Fetching profiles for user IDs:', userIds);
       const { data: profiles, error: profilesError } = await supabaseAdmin
         .from('profiles')
         .select('id, email, username')
         .in('id', userIds);
+
+      console.log('Profiles query result:', { profiles, profilesError });
 
       if (!profilesError) {
         profilesData = profiles || [];
