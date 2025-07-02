@@ -67,9 +67,14 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
         className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            🏆 Leaderboard
-          </h2>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              🏆 Leaderboard
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Best scores per player
+            </p>
+          </div>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"

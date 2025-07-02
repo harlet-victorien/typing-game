@@ -11,8 +11,9 @@
 - Heatmap visualization of error frequency by key position
 - keyboard strokes sounds (different switches sounds)
 - user stats graphs
-
-
+- music texts
+  
+  
 
 **Spatial UI Concepts**
 

@@ -75,66 +75,46 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const user_id = searchParams.get('user_id');
 
-    // Use a more explicit approach to join tables
-    const query = supabaseAdmin
-      .rpc('get_scores_with_profiles', {
-        score_limit: limit,
-        filter_user_id: user_id
-      });
+    // Get all scores and process on the client side to find best per user
+    let scoresQuery = supabaseAdmin
+      .from('scores')
+      .select(`
+        *,
+        profiles(id, email, username)
+      `)
+      .order('wpm', { ascending: false })
+      .limit(1000); // Get more scores to find best per user
 
-    // Fallback to direct query if RPC doesn't exist
-    const { error } = await query;
-    let { data } = await query;
-
-    if (error) {
-      console.log('RPC failed, falling back to direct query:', error.message);
-      
-      // Fallback: Get scores first, then fetch profiles separately
-      let scoresQuery = supabaseAdmin
-        .from('scores')
-        .select('*')
-        .order('wpm', { ascending: false })
-        .limit(limit);
-
-      if (user_id) {
-        scoresQuery = scoresQuery.eq('user_id', user_id);
-      }
-
-      const { data: scoresData, error: scoresError } = await scoresQuery;
-
-      if (scoresError) {
-        console.error('Scores query error:', scoresError);
-        return NextResponse.json(
-          { error: 'Failed to fetch scores' },
-          { status: 500 }
-        );
-      }
-
-      // Fetch profiles for the users in the scores
-      const userIds = [...new Set(scoresData?.map(score => score.user_id) || [])];
-      
-      if (userIds.length > 0) {
-        const { data: profilesData, error: profilesError } = await supabaseAdmin
-          .from('profiles')
-          .select('id, email, username')
-          .in('id', userIds);
-
-        if (!profilesError && profilesData) {
-          // Combine scores with profiles
-          data = scoresData?.map(score => ({
-            ...score,
-            profiles: profilesData.find(profile => profile.id === score.user_id)
-          }));
-        } else {
-          // If profiles fetch fails, return scores without profile info
-          data = scoresData;
-        }
-      } else {
-        data = scoresData;
-      }
+    if (user_id) {
+      scoresQuery = scoresQuery.eq('user_id', user_id);
     }
 
-    return NextResponse.json({ scores: data || [] });
+    const { data: allScores, error: scoresError } = await scoresQuery;
+
+    if (scoresError) {
+      console.error('Scores query error:', scoresError);
+      return NextResponse.json(
+        { error: 'Failed to fetch scores' },
+        { status: 500 }
+      );
+    }
+
+    // Group by user and get the best score for each user
+    const userBestScores = new Map();
+    
+    allScores?.forEach(score => {
+      const existingScore = userBestScores.get(score.user_id);
+      if (!existingScore || score.wpm > existingScore.wpm) {
+        userBestScores.set(score.user_id, score);
+      }
+    });
+
+    // Convert to array, sort by WPM, and limit results
+    const bestScores = Array.from(userBestScores.values())
+      .sort((a, b) => b.wpm - a.wpm)
+      .slice(0, limit);
+
+    return NextResponse.json({ scores: bestScores || [] });
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json(
