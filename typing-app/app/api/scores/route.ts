@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '../../../lib/supabase-client';
+import { createClient } from '@supabase/supabase-js';
+
+// Use service role key for admin operations
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +32,7 @@ export async function POST(request: NextRequest) {
     console.log('Validation passed, attempting database insert...');
 
     // Insert score into database
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('scores')
       .insert({
         user_id,
@@ -64,7 +76,7 @@ export async function GET(request: NextRequest) {
     const user_id = searchParams.get('user_id');
 
     // Use a more explicit approach to join tables
-    const query = supabase
+    const query = supabaseAdmin
       .rpc('get_scores_with_profiles', {
         score_limit: limit,
         filter_user_id: user_id
@@ -78,7 +90,7 @@ export async function GET(request: NextRequest) {
       console.log('RPC failed, falling back to direct query:', error.message);
       
       // Fallback: Get scores first, then fetch profiles separately
-      let scoresQuery = supabase
+      let scoresQuery = supabaseAdmin
         .from('scores')
         .select('*')
         .order('wpm', { ascending: false })
@@ -102,7 +114,7 @@ export async function GET(request: NextRequest) {
       const userIds = [...new Set(scoresData?.map(score => score.user_id) || [])];
       
       if (userIds.length > 0) {
-        const { data: profilesData, error: profilesError } = await supabase
+        const { data: profilesData, error: profilesError } = await supabaseAdmin
           .from('profiles')
           .select('id, email, username')
           .in('id', userIds);

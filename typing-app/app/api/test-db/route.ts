@@ -1,12 +1,24 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../lib/supabase-client';
+import { createClient } from '@supabase/supabase-js';
+
+// Use service role key for admin operations
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
 
 export async function GET() {
   try {
     console.log('Testing database connection...');
     
     // Test basic connection
-    const { error: connectionError } = await supabase
+    const { error: connectionError } = await supabaseAdmin
       .from('scores')
       .select('count')
       .limit(1);
@@ -21,7 +33,7 @@ export async function GET() {
     }
     
     // Test profiles table
-    const { data: profiles, error: profilesError } = await supabase
+    const { data: profiles, error: profilesError } = await supabaseAdmin
       .from('profiles')
       .select('count')
       .limit(1);
@@ -36,7 +48,7 @@ export async function GET() {
     }
     
     // Test scores table
-    const { data: scores, error: scoresError } = await supabase
+    const { data: scores, error: scoresError } = await supabaseAdmin
       .from('scores')
       .select('count')
       .limit(1);
