@@ -37,7 +37,7 @@ export default function CurrentWord({ word, currentInput, isActive, upcomingWord
                 ${status === 'correct' ? 'text-green-600 dark:text-green-400' : ''}
                 ${status === 'incorrect' ? 'text-red-600 dark:text-red-400 bg-red-500/20' : ''}
                 ${status === 'current' ? 'text-yellow-600 dark:text-yellow-400' : ''}
-                ${status === 'upcoming' ? 'text-gray-400 dark:text-gray-500' : ''}
+                ${status === 'upcoming' ? 'text-foreground' : ''}
               `}
               animate={{
                 scale: status === 'current' ? 1.1 : 1,
@@ -60,7 +60,7 @@ export default function CurrentWord({ word, currentInput, isActive, upcomingWord
       {/* Next Word - Medium Size */}
       {upcomingWords[0] && (
         <motion.div 
-          className="text-4xl font-mono font-medium tracking-wide text-gray-500 dark:text-gray-400 opacity-60"
+          className="text-4xl font-mono font-medium tracking-wide text-foreground opacity-60"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 0.6, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -72,7 +72,7 @@ export default function CurrentWord({ word, currentInput, isActive, upcomingWord
       {/* Second Next Word - Small Size */}
       {upcomingWords[1] && (
         <motion.div 
-          className="text-2xl font-mono tracking-wide text-gray-400 dark:text-gray-500 opacity-40"
+          className="text-2xl font-mono tracking-wide text-foreground opacity-40"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 0.4, y: 0 }}
           transition={{ delay: 0.2 }}

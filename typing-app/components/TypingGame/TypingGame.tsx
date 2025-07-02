@@ -11,6 +11,7 @@ import { useAuth } from '../auth/AuthProvider';
 import AuthModal from '../auth/AuthModal';
 import UserProfile from '../auth/UserProfile';
 import Leaderboard from '../Leaderboard';
+import Aurora from '../Aurora';
 import { Button } from '../ui/button';
 
 // Default fallback words in case API fails
@@ -55,7 +56,6 @@ export default function TypingGame() {
   });
 
   const [wordList, setWordList] = useState<string[]>(FALLBACK_WORDS);
-  const [isLoadingWords, setIsLoadingWords] = useState(false);
   const [wordsError, setWordsError] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -73,7 +73,6 @@ export default function TypingGame() {
 
   // Fetch fresh words from API
   const fetchWords = useCallback(async () => {
-    setIsLoadingWords(true);
     setWordsError(null);
     
     try {
@@ -88,8 +87,6 @@ export default function TypingGame() {
       console.error('Error fetching words:', error);
       setWordsError('Failed to load new words. Using default word list.');
       setWordList(FALLBACK_WORDS);
-    } finally {
-      setIsLoadingWords(false);
     }
   }, []);
 
@@ -211,10 +208,22 @@ export default function TypingGame() {
   }, []);
 
   const handleInputChange = useCallback((value: string) => {
-    if (!gameState.isGameActive || isGameComplete) return;
+    console.log('TypingGame handleInputChange:', { 
+      value, 
+      isGameActive: gameState.isGameActive, 
+      isGameComplete,
+      hasStartedTyping: gameState.hasStartedTyping 
+    });
+    
+    if (!gameState.isGameActive || isGameComplete) {
+      console.log('Input blocked - game not active or complete');
+      return;
+    }
 
     // Set hasStartedTyping to true on first keystroke
     const isFirstKeystroke = !gameState.hasStartedTyping && value.length === 1;
+    
+    console.log('Processing input:', { isFirstKeystroke, value });
     
     setGameState(prev => ({
       ...prev,
@@ -294,143 +303,304 @@ export default function TypingGame() {
       } else {
         console.log('Not saving score:', { noUser: !user, alreadySaved: scoreSaved });
       }
-      setGameState(prev => ({ ...prev, isGameActive: false }));
+      setGameState(prev => ({ 
+        ...prev, 
+        isGameActive: false,
+        completedWords: [] // Clear completed words when game ends
+      }));
     }
   }, [gameState.timeRemaining, gameState.isGameActive, gameState, user, saveScore, scoreSaved]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center justify-center p-8 transition-colors duration-200">
-      {/* Header with controls */}
-      <div className="fixed top-4 left-4 right-4 flex justify-between items-center z-10">
-        <div className="flex items-center space-x-4">
-          <Button
-            onClick={() => setShowLeaderboard(true)}
-            variant="secondary"
-            className="px-4 py-2"
-          >
-            🏆 Leaderboard
-          </Button>
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          {user ? (
-            <UserProfile />
-          ) : (
-            <Button
-              onClick={() => setShowAuthModal(true)}
-              className="px-4 py-2"
-            >
-              Sign In
-            </Button>
-          )}
-          <ThemeToggle />
-        </div>
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 transition-colors duration-200 relative overflow-hidden">
+      {/* Aurora Background */}
+      <div className="absolute inset-0 z-0">
+        <Aurora
+          colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
+          blend={0.5}
+          amplitude={1.0}
+          speed={0.5}
+        />
       </div>
-
-      {/* Modals */}
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
-      />
-      <Leaderboard 
-        isOpen={showLeaderboard} 
-        onClose={() => setShowLeaderboard(false)} 
-      />
       
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-6xl"
-      >
-        <GameStats
-          gameState={gameState}
-          isGameComplete={isGameComplete}
-        />
-
-        {/* Stop Button - only show during active game */}
-        {gameState.isGameActive && !isGameComplete && (
-          <div className="text-center mb-4">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={stopGame}
-              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition-colors"
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-6xl">
+        {/* Header with controls */}
+        <div className="fixed top-4 left-4 right-4 flex justify-between items-center z-20">
+          <div className="flex items-center space-x-4">
+            <Button
+              onClick={() => setShowLeaderboard(true)}
+              variant="default"
             >
-              Stop Game
-            </motion.button>
+              🏆 Leaderboard
+            </Button>
           </div>
-        )}
-
-        {/* Score Saving Indicator */}
-        {savingScore && (
-          <div className="text-center mb-4">
-            <div className="text-blue-600 dark:text-blue-400 text-sm flex items-center justify-center space-x-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400"></div>
-              <span>Saving your score...</span>
-            </div>
-          </div>
-        )}
-
-        {/* Score Saved Confirmation */}
-        {scoreSaved && !savingScore && isGameComplete && (
-          <div className="text-center mb-4">
-            <div className="text-green-600 dark:text-green-400 text-sm flex items-center justify-center space-x-2">
-              <span>✅ Score saved to leaderboard!</span>
-            </div>
-          </div>
-        )}
-
-        {/* Words Loading/Error Status */}
-        {isLoadingWords && (
-          <div className="text-center mb-4">
-            <div className="text-gray-600 dark:text-gray-400">
-              Loading fresh words...
-            </div>
-          </div>
-        )}
-        
-        {wordsError && (
-          <div className="text-center mb-4">
-            <div className="text-yellow-600 dark:text-yellow-400 text-sm">
-              {wordsError}
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center justify-center space-x-8 my-16">
-          <CompletedWords words={gameState.completedWords} />
           
-          {!isGameComplete && (
-            <CurrentWord 
-              word={currentWord}
-              currentInput={gameState.currentInput}
-              isActive={gameState.isGameActive}
-              upcomingWords={upcomingWords}
-            />
-          )}
-          
-          {isGameComplete && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="text-4xl font-bold text-green-500 dark:text-green-400"
-            >
-              ⏰ Time&apos;s Up!
-            </motion.div>
-          )}
+          <div className="flex items-center space-x-4">
+            {user ? (
+              <UserProfile />
+            ) : (
+              <Button
+                onClick={() => setShowAuthModal(true)}
+                variant="ghost"
+              >
+                Sign In
+              </Button>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
 
-        <WordInput
-          value={gameState.currentInput}
-          onChange={handleInputChange}
-          onKeyPress={handleKeyPress}
-          onKeyDown={handleKeyDown}
-          targetWord={currentWord}
-          isGameActive={gameState.isGameActive}
-          isGameComplete={isGameComplete}
-          onStart={startGame}
+        {/* Modals */}
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => setShowAuthModal(false)} 
         />
-      </motion.div>
+        <Leaderboard 
+          isOpen={showLeaderboard} 
+          onClose={() => setShowLeaderboard(false)} 
+        />
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full"
+        >
+          <GameStats
+            gameState={gameState}
+            isGameComplete={isGameComplete}
+          />
+
+          {/* Score Saving Indicator */}
+          {savingScore && (
+            <div className="text-center mb-4">
+              <div className="text-blue-200 text-sm flex items-center justify-center space-x-2 bg-blue-900/20 backdrop-blur-sm px-4 py-2 rounded-lg border border-blue-400/30">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-200"></div>
+                <span>Saving your score...</span>
+              </div>
+            </div>
+          )}
+
+          {/* Score Saved Confirmation */}
+          {scoreSaved && !savingScore && isGameComplete && (
+            <div className="text-center mb-4">
+              <div className="text-green-200 text-sm flex items-center justify-center space-x-2 bg-green-900/20 backdrop-blur-sm px-4 py-2 rounded-lg border border-green-400/30">
+                <span>✅ Score saved to leaderboard!</span>
+              </div>
+            </div>
+          )}
+
+          {/* Words Loading/Error Status - Only show errors */}
+          {wordsError && (
+            <div className="text-center mb-4">
+              <div className="text-yellow-200 text-sm bg-yellow-900/20 backdrop-blur-sm px-4 py-2 rounded-lg border border-yellow-400/30">
+                {wordsError}
+              </div>
+            </div>
+          )}
+
+          {/* Main typing area - centered with completed words on the left */}
+          <div className="flex items-center justify-center min-h-[50vh] relative my-16">
+            {/* Completed words - positioned on the left */}
+            {!isGameComplete && (
+              <div className="absolute left-4 top-1/2 transform -translate-y-1/2 hidden lg:block">
+                <CompletedWords words={gameState.completedWords} />
+              </div>
+            )}
+            
+            {/* Current typing words - centered */}
+            {!isGameComplete && (
+              <CurrentWord 
+                word={currentWord}
+                currentInput={gameState.currentInput}
+                isActive={gameState.isGameActive}
+                upcomingWords={upcomingWords}
+              />
+            )}
+            
+            {/* Game complete message - centered */}
+            {isGameComplete && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="text-4xl font-bold text-white bg-black/20 backdrop-blur-sm px-8 py-4 rounded-lg border border-white/20"
+              >
+                ⏰ Time&apos;s Up!
+              </motion.div>
+            )}
+          </div>
+
+          <WordInput
+            value={gameState.currentInput}
+            onChange={handleInputChange}
+            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
+            targetWord={currentWord}
+            isGameActive={gameState.isGameActive}
+            isGameComplete={isGameComplete}
+          />
+
+          {/* Smart Game Controls - Positioned below the words */}
+          <div className="text-center mt-16 mb-8">
+            {!gameState.isGameActive && !isGameComplete && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative"
+              >
+                {/* Glowing background effect */}
+                <div className="absolute inset-y-0 left-8 right-8"></div>
+                
+                <motion.button
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: "0 0 12px rgba(59, 130, 246, 0.4)"
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={startGame}
+                  className="relative px-12 py-6 bg-gradient-to-r from-blue-600/80 to-purple-600/80 backdrop-blur-sm border border-white/30 text-white rounded-full font-bold text-xl transition-all duration-300 hover:from-blue-500/90 hover:to-purple-500/90 group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <motion.div
+                      animate={{ rotate: [0, 360] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      className="w-6 h-6 border-2 border-white/60 border-t-white rounded-full"
+                    ></motion.div>
+                    <span>Start Typing Challenge</span>
+                    <motion.div
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="text-2xl"
+                    >
+                      🚀
+                    </motion.div>
+                  </div>
+                  
+                  {/* Particle effects on hover */}
+                  <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-white/60 rounded-full animate-ping"></div>
+                    <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-white/40 rounded-full animate-pulse"></div>
+                    <div className="absolute bottom-1/3 left-1/4 w-1 h-1 bg-white/40 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                  </div>
+                </motion.button>
+              </motion.div>
+            )}
+
+            {gameState.isGameActive && !isGameComplete && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative"
+              >
+                {/* Pulsing warning effect */}
+                <div className="absolute inset-y-0 left-8 right-8"></div>
+                
+                <motion.button
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: "0 0 15px rgba(239, 68, 68, 0.4)"
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={stopGame}
+                  className="relative px-8 py-4 bg-gradient-to-r from-red-600/80 to-orange-600/80 backdrop-blur-sm border border-white/30 text-white rounded-full font-bold text-lg transition-all duration-300 hover:from-red-500/90 hover:to-orange-500/90 group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                      className="text-xl"
+                    >
+                      ⏹️
+                    </motion.div>
+                    <span>End Session</span>
+                    <motion.div
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="text-lg"
+                    >
+                      ⚠️
+                    </motion.div>
+                  </div>
+                  
+                  {/* Warning pulse effect */}
+                  <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-red-400/60 rounded-full animate-ping"></div>
+                  </div>
+                </motion.button>
+              </motion.div>
+            )}
+
+            {isGameComplete && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative"
+              >
+                {/* Celebration background effect */}
+                <div className="absolute inset-y-0 left-8 right-8"></div>
+                
+                <motion.button
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: "0 0 15px rgba(34, 197, 94, 0.4)"
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={startGame}
+                  className="relative px-12 py-6 bg-gradient-to-r from-green-600/80 to-emerald-600/80 backdrop-blur-sm border border-white/30 text-white rounded-full font-bold text-xl transition-all duration-300 hover:from-green-500/90 hover:to-emerald-500/90 group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <motion.div
+                      animate={{ 
+                        rotate: [0, 360],
+                        scale: [1, 1.1, 1]
+                      }}
+                      transition={{ 
+                        rotate: { duration: 2, repeat: Infinity, ease: "linear" },
+                        scale: { duration: 1, repeat: Infinity }
+                      }}
+                      className="text-2xl"
+                    >
+                      🎯
+                    </motion.div>
+                    <span>Play Again with New Words</span>
+                    <motion.div
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                      className="text-2xl"
+                    >
+                      🚀
+                    </motion.div>
+                  </div>
+                  
+                  {/* Celebration particles */}
+                  <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <motion.div 
+                      animate={{ 
+                        y: [0, -20, 0],
+                        opacity: [0, 1, 0]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="absolute top-1/4 left-1/4 text-yellow-300 text-lg"
+                    >
+                      ✨
+                    </motion.div>
+                    <motion.div 
+                      animate={{ 
+                        y: [0, -15, 0],
+                        opacity: [0, 1, 0]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                      className="absolute top-1/3 right-1/4 text-pink-300 text-lg"
+                    >
+                      💫
+                    </motion.div>
+                  </div>
+                </motion.button>
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 } 

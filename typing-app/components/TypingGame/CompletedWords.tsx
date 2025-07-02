@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
 
 interface CompletedWord {
   word: string;
@@ -15,6 +16,20 @@ interface CompletedWordsProps {
 export default function CompletedWords({ words }: CompletedWordsProps) {
   // Show last 5 completed words
   const visibleWords = words.slice(-5);
+  const [hasWords, setHasWords] = useState(words.length > 0);
+
+  // Track when we have words to prevent showing placeholder during exit animations
+  useEffect(() => {
+    if (words.length > 0) {
+      setHasWords(true);
+    } else {
+      // Delay hiding placeholder to let exit animations complete
+      const timer = setTimeout(() => {
+        setHasWords(false);
+      }, 500); // Wait for exit animation
+      return () => clearTimeout(timer);
+    }
+  }, [words.length]);
 
   return (
     <div className="flex flex-col items-end space-y-2 min-w-[200px]">
@@ -47,7 +62,8 @@ export default function CompletedWords({ words }: CompletedWordsProps) {
                   ease: ["easeOut", "linear", "easeIn"]
                 },
                 x: { duration: 0.3, ease: "easeOut" },
-                scale: { duration: 0.3, ease: "easeOut" }
+                scale: { duration: 0.3, ease: "easeOut" },
+                exit: { duration: 0.3 }
               }}
               className={`
                 font-mono text-right transition-all duration-500
@@ -82,11 +98,11 @@ export default function CompletedWords({ words }: CompletedWordsProps) {
         })}
       </AnimatePresence>
       
-      {words.length === 0 && (
+      {!hasWords && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.5 }}
-          className="text-gray-500 dark:text-gray-400 font-mono text-lg"
+          className="text-foreground font-mono text-lg"
         >
           Completed words appear here...
         </motion.div>

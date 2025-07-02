@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
 
 interface WordInputProps {
   value: string;
@@ -11,7 +10,6 @@ interface WordInputProps {
   targetWord: string;
   isGameActive: boolean;
   isGameComplete: boolean;
-  onStart: () => Promise<void>;
 }
 
 export default function WordInput({
@@ -21,22 +19,34 @@ export default function WordInput({
   onKeyDown,
   targetWord,
   isGameActive,
-  isGameComplete,
-  onStart
+  isGameComplete
 }: WordInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isGameActive && !isGameComplete) {
-      inputRef.current?.focus();
+      // Small delay to ensure the component is fully rendered
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [isGameActive, isGameComplete]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     
+    console.log('Input change:', { 
+      newValue, 
+      currentValue: value, 
+      isGameActive, 
+      isGameComplete,
+      targetWord 
+    });
+    
     // Don't allow input longer than the target word
     if (newValue.length > targetWord.length) {
+      console.log('Input too long, ignoring');
       return;
     }
     
@@ -75,18 +85,7 @@ export default function WordInput({
   if (!isGameActive && !isGameComplete) {
     return (
       <div className="flex flex-col items-center space-y-4">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onStart}
-          className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-xl transition-colors"
-        >
-          Start Typing Game
-        </motion.button>
-        <p className="text-gray-600 dark:text-gray-400 text-center">
-          Just start typing! Timer starts on your first keystroke.<br />
-          Press SPACEBAR to complete each word. Fresh words loaded each game!
-        </p>
+        {/* Empty state - no text needed */}
       </div>
     );
   }
@@ -94,22 +93,12 @@ export default function WordInput({
   if (isGameComplete) {
     return (
       <div className="flex flex-col items-center space-y-4">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onStart}
-          className="px-8 py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-xl transition-colors"
-        >
-          Play Again with New Words
-        </motion.button>
+        {/* Empty state - no text needed */}
       </div>
     );
   }
 
-  const isCorrect = value === targetWord.slice(0, value.length);
-  const hasErrors = value.length > 0 && !isCorrect;
-
-    const handleFocus = () => {
+  const handleFocus = () => {
     if (isGameActive && !isGameComplete) {
       inputRef.current?.focus();
     }
@@ -127,7 +116,7 @@ export default function WordInput({
         value={value}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        className="absolute opacity-0 pointer-events-none -z-10"
+        className="absolute opacity-0 -z-10"
         autoComplete="off"
         spellCheck="false"
         aria-label="Typing input"
@@ -138,20 +127,7 @@ export default function WordInput({
         <div className="text-gray-600 dark:text-gray-400 text-sm">
           Progress: {value.length}/{targetWord.length}
         </div>
-        
-        <div className="text-center text-gray-500 dark:text-gray-500 text-xs">
-          Type the word and press SPACEBAR to complete it!
-        </div>
-        
-        {hasErrors && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-red-600 dark:text-red-400 text-sm"
-          >
-            Incorrect! Use backspace to fix errors, then press SPACEBAR
-          </motion.div>
-        )}
+      
       </div>
     </div>
   );
