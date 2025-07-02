@@ -52,31 +52,63 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const user_id = searchParams.get('user_id');
 
-    let query = supabase
-      .from('scores')
-      .select(`
-        *,
-        profiles (
-          email,
-          username
-        )
-      `)
-      .order('wpm', { ascending: false })
-      .limit(limit);
+    // Use a more explicit approach to join tables
+    const query = supabase
+      .rpc('get_scores_with_profiles', {
+        score_limit: limit,
+        filter_user_id: user_id
+      });
 
-    // If user_id is provided, get user's scores
-    if (user_id) {
-      query = query.eq('user_id', user_id);
-    }
-
-    const { data, error } = await query;
+    // Fallback to direct query if RPC doesn't exist
+    const { error } = await query;
+    let { data } = await query;
 
     if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch scores' },
-        { status: 500 }
-      );
+      console.log('RPC failed, falling back to direct query:', error.message);
+      
+      // Fallback: Get scores first, then fetch profiles separately
+      let scoresQuery = supabase
+        .from('scores')
+        .select('*')
+        .order('wpm', { ascending: false })
+        .limit(limit);
+
+      if (user_id) {
+        scoresQuery = scoresQuery.eq('user_id', user_id);
+      }
+
+      const { data: scoresData, error: scoresError } = await scoresQuery;
+
+      if (scoresError) {
+        console.error('Scores query error:', scoresError);
+        return NextResponse.json(
+          { error: 'Failed to fetch scores' },
+          { status: 500 }
+        );
+      }
+
+      // Fetch profiles for the users in the scores
+      const userIds = [...new Set(scoresData?.map(score => score.user_id) || [])];
+      
+      if (userIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, email, username')
+          .in('id', userIds);
+
+        if (!profilesError && profilesData) {
+          // Combine scores with profiles
+          data = scoresData?.map(score => ({
+            ...score,
+            profiles: profilesData.find(profile => profile.id === score.user_id)
+          }));
+        } else {
+          // If profiles fetch fails, return scores without profile info
+          data = scoresData;
+        }
+      } else {
+        data = scoresData;
+      }
     }
 
     return NextResponse.json({ scores: data || [] });
