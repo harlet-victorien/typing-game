@@ -47,9 +47,9 @@ export default function CompletedWords({ words }: CompletedWordsProps) {
               }}
               className={`
                 font-mono text-right transition-all duration-500
-                ${isLatest ? 'text-2xl text-green-400 font-bold' : ''}
-                ${index === visibleWords.length - 2 ? 'text-xl text-green-300' : ''}
-                ${index <= visibleWords.length - 3 ? 'text-lg text-green-200' : ''}
+                ${isLatest ? 'text-2xl text-green-600 dark:text-green-400 font-bold' : ''}
+                ${index === visibleWords.length - 2 ? 'text-xl text-green-500 dark:text-green-300' : ''}
+                ${index <= visibleWords.length - 3 ? 'text-lg text-green-400 dark:text-green-200' : ''}
               `}
               style={{
                 filter: isLatest ? 'none' : `blur(${(visibleWords.length - index - 1) * 0.5}px)`
@@ -77,7 +77,7 @@ export default function CompletedWords({ words }: CompletedWordsProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.5 }}
-          className="text-gray-500 font-mono text-lg"
+          className="text-gray-500 dark:text-gray-400 font-mono text-lg"
         >
           Completed words appear here...
         </motion.div>

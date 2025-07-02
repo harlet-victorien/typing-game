@@ -32,27 +32,27 @@ export default function GameStats({ gameState, isGameComplete, totalWords }: Gam
     {
       label: 'Words',
       value: `${gameState.completedWords.length}/${totalWords}`,
-      color: 'text-blue-400'
+      color: 'text-blue-600 dark:text-blue-400'
     },
     {
       label: 'WPM',
       value: calculateWPM(),
-      color: 'text-green-400'
+      color: 'text-green-600 dark:text-green-400'
     },
     {
       label: 'Accuracy',
       value: `${calculateAccuracy()}%`,
-      color: 'text-yellow-400'
+      color: 'text-yellow-600 dark:text-yellow-400'
     },
     {
       label: 'Time',
       value: `${getElapsedTime()}s`,
-      color: 'text-purple-400'
+      color: 'text-purple-600 dark:text-purple-400'
     },
     {
       label: 'Errors',
       value: gameState.errors,
-      color: 'text-red-400'
+      color: 'text-red-600 dark:text-red-400'
     }
   ];
 
@@ -73,7 +73,7 @@ export default function GameStats({ gameState, isGameComplete, totalWords }: Gam
           <div className={`text-2xl font-bold ${stat.color}`}>
             {stat.value}
           </div>
-          <div className="text-gray-400 text-sm uppercase tracking-wider">
+          <div className="text-gray-600 dark:text-gray-400 text-sm uppercase tracking-wider">
             {stat.label}
           </div>
         </motion.div>
@@ -84,12 +84,12 @@ export default function GameStats({ gameState, isGameComplete, totalWords }: Gam
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5 }}
-          className="text-center ml-8 pl-8 border-l border-gray-600"
+          className="text-center ml-8 pl-8 border-l border-gray-300 dark:border-gray-600"
         >
-          <div className="text-2xl font-bold text-green-400">
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
             🏆
           </div>
-          <div className="text-gray-400 text-sm uppercase tracking-wider">
+          <div className="text-gray-600 dark:text-gray-400 text-sm uppercase tracking-wider">
             Complete
           </div>
         </motion.div>

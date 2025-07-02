@@ -6,6 +6,7 @@ import CurrentWord from './CurrentWord';
 import CompletedWords from './CompletedWords';
 import WordInput from './WordInput';
 import GameStats from './GameStats';
+import { ThemeToggle } from '../ThemeToggle';
 
 const WORD_LIST = [
   'javascript', 'typescript', 'react', 'nextjs', 'framer', 'motion',
@@ -60,8 +61,8 @@ export default function TypingGame() {
       totalKeystrokes: prev.totalKeystrokes + 1
     }));
 
-    // Check if word is completed
-    if (value === currentWord) {
+    // Check if word is completed (either correctly or with errors)
+    if (value.length === currentWord.length) {
       const newCompletedWord = {
         word: currentWord,
         timestamp: Date.now()
@@ -92,7 +93,12 @@ export default function TypingGame() {
   }, [isGameComplete, gameState.isGameActive]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center justify-center p-8 transition-colors duration-200">
+      {/* Theme Toggle Button */}
+      <div className="fixed top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -119,7 +125,7 @@ export default function TypingGame() {
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="text-4xl font-bold text-green-400"
+              className="text-4xl font-bold text-green-500 dark:text-green-400"
             >
               🎉 Complete!
             </motion.div>
