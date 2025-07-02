@@ -101,15 +101,19 @@ export async function GET(request: NextRequest) {
     // Group by user and get the best score for each user
     const userBestScores = new Map();
     
-    allScores?.forEach(score => {
-      const existingScore = userBestScores.get(score.user_id);
-      if (!existingScore || score.wpm > existingScore.wpm) {
-        userBestScores.set(score.user_id, score);
-      }
-    });
+    if (allScores && allScores.length > 0) {
+      allScores.forEach(score => {
+        const existingScore = userBestScores.get(score.user_id);
+        if (!existingScore || score.wpm > existingScore.wpm) {
+          userBestScores.set(score.user_id, score);
+        }
+      });
+    }
 
     // Get unique user IDs from the best scores
     const userIds = Array.from(userBestScores.keys());
+
+    console.log('Found best scores for users:', userIds);
 
     // Fetch profiles for these users
     let profilesData: Array<{ id: string; email: string; username: string | null }> = [];
@@ -125,6 +129,8 @@ export async function GET(request: NextRequest) {
       if (!profilesError) {
         profilesData = profiles || [];
       }
+    } else {
+      console.log('No scores found in database');
     }
 
     // Combine scores with profiles
@@ -135,6 +141,8 @@ export async function GET(request: NextRequest) {
       }))
       .sort((a, b) => b.wpm - a.wpm)
       .slice(0, limit);
+
+    console.log('Final best scores:', bestScores);
 
     return NextResponse.json({ scores: bestScores || [] });
   } catch (error) {
