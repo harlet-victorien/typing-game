@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface CompletedWord {
   word: string;
   timestamp: number;
+  isCorrect: boolean;
 }
 
 interface CompletedWordsProps {
@@ -19,8 +20,6 @@ export default function CompletedWords({ words }: CompletedWordsProps) {
     <div className="flex flex-col items-end space-y-2 min-w-[200px]">
       <AnimatePresence mode="popLayout">
         {visibleWords.map((completedWord, index) => {
-          const age = Date.now() - completedWord.timestamp;
-          const opacity = Math.max(0.2, 1 - (age / 10000)); // Fade over 10 seconds
           const isLatest = index === visibleWords.length - 1;
 
           return (
@@ -32,7 +31,7 @@ export default function CompletedWords({ words }: CompletedWordsProps) {
                 scale: 0.8 
               }}
               animate={{ 
-                opacity: isLatest ? 1 : opacity,
+                opacity: [0, 1, 1, 0.2],
                 x: 0,
                 scale: isLatest ? 1 : 0.9 - (index * 0.1)
               }}
@@ -42,14 +41,24 @@ export default function CompletedWords({ words }: CompletedWordsProps) {
                 scale: 0.8 
               }}
               transition={{ 
-                duration: 0.3,
-                ease: "easeOut"
+                opacity: {
+                  duration: 10,
+                  times: [0, 0.05, 0.9, 1],
+                  ease: ["easeOut", "linear", "easeIn"]
+                },
+                x: { duration: 0.3, ease: "easeOut" },
+                scale: { duration: 0.3, ease: "easeOut" }
               }}
               className={`
                 font-mono text-right transition-all duration-500
-                ${isLatest ? 'text-2xl text-green-600 dark:text-green-400 font-bold' : ''}
-                ${index === visibleWords.length - 2 ? 'text-xl text-green-500 dark:text-green-300' : ''}
-                ${index <= visibleWords.length - 3 ? 'text-lg text-green-400 dark:text-green-200' : ''}
+                ${completedWord.isCorrect 
+                  ? isLatest ? 'text-2xl text-green-600 dark:text-green-400 font-bold' : 
+                    index === visibleWords.length - 2 ? 'text-xl text-green-500 dark:text-green-300' : 
+                    'text-lg text-green-400 dark:text-green-200'
+                  : isLatest ? 'text-2xl text-red-600 dark:text-red-400 font-bold' :
+                    index === visibleWords.length - 2 ? 'text-xl text-red-500 dark:text-red-300' :
+                    'text-lg text-red-400 dark:text-red-200'
+                }
               `}
               style={{
                 filter: isLatest ? 'none' : `blur(${(visibleWords.length - index - 1) * 0.5}px)`
@@ -65,7 +74,7 @@ export default function CompletedWords({ words }: CompletedWordsProps) {
                   }}
                   transition={{ duration: 0.5 }}
                 >
-                  ✓
+                  {completedWord.isCorrect ? '✓' : '✗'}
                 </motion.div>
               )}
             </motion.div>

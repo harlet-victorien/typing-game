@@ -6,16 +6,25 @@ import { GameState } from './TypingGame';
 interface GameStatsProps {
   gameState: GameState;
   isGameComplete: boolean;
-  totalWords: number;
 }
 
-export default function GameStats({ gameState, isGameComplete, totalWords }: GameStatsProps) {
+export default function GameStats({ gameState, isGameComplete }: GameStatsProps) {
   const calculateWPM = () => {
-    if (!gameState.startTime || gameState.completedWords.length === 0) return 0;
+    if (!gameState.isGameActive && gameState.timeRemaining === 60) return 0; // Game hasn't started
     
-    const timeElapsed = (Date.now() - gameState.startTime) / 1000 / 60; // minutes
-    const wordsTyped = gameState.completedWords.length;
-    return Math.round(wordsTyped / timeElapsed);
+    // Calculate elapsed time from the 60-second countdown
+    const timeElapsed = (60 - gameState.timeRemaining) / 60; // minutes
+    
+    // Only count correctly typed words for WPM
+    const correctWords = gameState.completedWords.filter(word => word.isCorrect).length;
+    
+    // Need at least some time and correct words for calculation
+    if (timeElapsed <= 0 || correctWords === 0) return 0;
+    
+    // Standard WPM calculation: correct words per minute
+    const wpm = correctWords / timeElapsed;
+    
+    return Math.round(wpm);
   };
 
   const calculateAccuracy = () => {
@@ -23,15 +32,14 @@ export default function GameStats({ gameState, isGameComplete, totalWords }: Gam
     return Math.round(((gameState.totalKeystrokes - gameState.errors) / gameState.totalKeystrokes) * 100);
   };
 
-  const getElapsedTime = () => {
-    if (!gameState.startTime) return 0;
-    return Math.round((Date.now() - gameState.startTime) / 1000);
+  const getTimeRemaining = () => {
+    return gameState.timeRemaining;
   };
 
   const stats = [
     {
       label: 'Words',
-      value: `${gameState.completedWords.length}/${totalWords}`,
+      value: `${gameState.completedWords.filter(word => word.isCorrect).length}/${gameState.completedWords.length}`,
       color: 'text-blue-600 dark:text-blue-400'
     },
     {
@@ -46,7 +54,7 @@ export default function GameStats({ gameState, isGameComplete, totalWords }: Gam
     },
     {
       label: 'Time',
-      value: `${getElapsedTime()}s`,
+      value: `${getTimeRemaining()}s`,
       color: 'text-purple-600 dark:text-purple-400'
     },
     {

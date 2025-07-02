@@ -7,8 +7,14 @@ import CompletedWords from './CompletedWords';
 import WordInput from './WordInput';
 import GameStats from './GameStats';
 import { ThemeToggle } from '../ThemeToggle';
+import { useAuth } from '../auth/AuthProvider';
+import AuthModal from '../auth/AuthModal';
+import UserProfile from '../auth/UserProfile';
+import Leaderboard from '../Leaderboard';
+import { Button } from '../ui/button';
 
-const WORD_LIST = [
+// Default fallback words in case API fails
+const FALLBACK_WORDS = [
   'javascript', 'typescript', 'react', 'nextjs', 'framer', 'motion',
   'animation', 'component', 'useState', 'useEffect', 'tailwind',
   'programming', 'developer', 'frontend', 'backend', 'fullstack',
@@ -18,38 +24,128 @@ const WORD_LIST = [
 
 export interface GameState {
   currentWordIndex: number;
-  completedWords: Array<{ word: string; timestamp: number }>;
+  completedWords: Array<{ word: string; timestamp: number; isCorrect: boolean }>;
   currentInput: string;
   isGameActive: boolean;
   startTime: number | null;
+  timeRemaining: number; // in seconds
   errors: number;
   totalKeystrokes: number;
 }
 
+interface WordsResponse {
+  words: string[];
+  count: number;
+  timestamp: string;
+}
+
 export default function TypingGame() {
+  const { user } = useAuth();
   const [gameState, setGameState] = useState<GameState>({
     currentWordIndex: 0,
     completedWords: [],
     currentInput: '',
     isGameActive: false,
     startTime: null,
+    timeRemaining: 60,
     errors: 0,
     totalKeystrokes: 0
   });
 
-  const currentWord = WORD_LIST[gameState.currentWordIndex];
-  const isGameComplete = gameState.currentWordIndex >= WORD_LIST.length;
+  const [wordList, setWordList] = useState<string[]>(FALLBACK_WORDS);
+  const [isLoadingWords, setIsLoadingWords] = useState(false);
+  const [wordsError, setWordsError] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [scoreSaved, setScoreSaved] = useState(false);
 
-  const startGame = useCallback(() => {
+  const currentWord = wordList[gameState.currentWordIndex];
+  const isGameComplete = gameState.timeRemaining === 0;
+
+  // Fetch fresh words from API
+  const fetchWords = useCallback(async () => {
+    setIsLoadingWords(true);
+    setWordsError(null);
+    
+    try {
+      const response = await fetch('/api/words');
+      if (!response.ok) {
+        throw new Error('Failed to fetch words');
+      }
+      
+      const data: WordsResponse = await response.json();
+      setWordList(data.words);
+    } catch (error) {
+      console.error('Error fetching words:', error);
+      setWordsError('Failed to load new words. Using default word list.');
+      setWordList(FALLBACK_WORDS);
+    } finally {
+      setIsLoadingWords(false);
+    }
+  }, []);
+
+  const startGame = useCallback(async () => {
+    // Fetch fresh words before starting the game
+    await fetchWords();
+    
     setGameState({
       currentWordIndex: 0,
       completedWords: [],
       currentInput: '',
       isGameActive: true,
       startTime: Date.now(),
+      timeRemaining: 60,
       errors: 0,
       totalKeystrokes: 0
     });
+  }, [fetchWords]);
+
+  const saveScore = useCallback(async (finalGameState: GameState) => {
+    if (!user || scoreSaved) return;
+
+    const timeElapsed = (60 - finalGameState.timeRemaining) / 60;
+    const correctWords = finalGameState.completedWords.filter(word => word.isCorrect).length;
+    const wpm = timeElapsed > 0 ? Math.round(correctWords / timeElapsed) : 0;
+    const accuracy = finalGameState.totalKeystrokes > 0 
+      ? Math.round(((finalGameState.totalKeystrokes - finalGameState.errors) / finalGameState.totalKeystrokes) * 100)
+      : 100;
+
+    try {
+      const response = await fetch('/api/scores', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          wpm,
+          accuracy,
+          words_typed: correctWords,
+          errors: finalGameState.errors,
+          time_duration: 60
+        }),
+      });
+
+      if (response.ok) {
+        setScoreSaved(true);
+      }
+    } catch (error) {
+      console.error('Failed to save score:', error);
+    }
+  }, [user, scoreSaved]);
+
+  const stopGame = useCallback(() => {
+    setGameState({
+      currentWordIndex: 0,
+      completedWords: [],
+      currentInput: '',
+      isGameActive: false,
+      startTime: null,
+      timeRemaining: 60,
+      errors: 0,
+      totalKeystrokes: 0
+    });
+    setScoreSaved(false);
   }, []);
 
   const handleInputChange = useCallback((value: string) => {
@@ -63,19 +159,21 @@ export default function TypingGame() {
 
     // Check if word is completed (either correctly or with errors)
     if (value.length === currentWord.length) {
+      const isCorrect = value === currentWord;
       const newCompletedWord = {
         word: currentWord,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        isCorrect: isCorrect
       };
 
       setGameState(prev => ({
         ...prev,
-        currentWordIndex: prev.currentWordIndex + 1,
+        currentWordIndex: (prev.currentWordIndex + 1) % wordList.length, // Loop through words
         completedWords: [...prev.completedWords, newCompletedWord],
         currentInput: ''
       }));
     }
-  }, [gameState.isGameActive, isGameComplete, currentWord]);
+  }, [gameState.isGameActive, isGameComplete, currentWord, wordList.length]);
 
   const handleKeyPress = useCallback((isCorrect: boolean) => {
     if (!isCorrect) {
@@ -86,18 +184,75 @@ export default function TypingGame() {
     }
   }, []);
 
+  // Countdown timer effect
   useEffect(() => {
-    if (isGameComplete && gameState.isGameActive) {
-      setGameState(prev => ({ ...prev, isGameActive: false }));
+    let interval: NodeJS.Timeout;
+    
+    if (gameState.isGameActive && gameState.timeRemaining > 0) {
+      interval = setInterval(() => {
+        setGameState(prev => ({
+          ...prev,
+          timeRemaining: prev.timeRemaining - 1
+        }));
+      }, 1000);
     }
-  }, [isGameComplete, gameState.isGameActive]);
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [gameState.isGameActive, gameState.timeRemaining]);
+
+  // End game when time runs out and save score
+  useEffect(() => {
+    if (gameState.timeRemaining === 0 && gameState.isGameActive) {
+      setGameState(prev => ({ ...prev, isGameActive: false }));
+      // Save score when game ends
+      if (user) {
+        saveScore(gameState);
+      }
+    }
+  }, [gameState.timeRemaining, gameState.isGameActive, gameState, user, saveScore]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center justify-center p-8 transition-colors duration-200">
-      {/* Theme Toggle Button */}
-      <div className="fixed top-4 right-4 z-10">
-        <ThemeToggle />
+      {/* Header with controls */}
+      <div className="fixed top-4 left-4 right-4 flex justify-between items-center z-10">
+        <div className="flex items-center space-x-4">
+          <Button
+            onClick={() => setShowLeaderboard(true)}
+            variant="secondary"
+            className="px-4 py-2"
+          >
+            🏆 Leaderboard
+          </Button>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          {user ? (
+            <UserProfile />
+          ) : (
+            <Button
+              onClick={() => setShowAuthModal(true)}
+              className="px-4 py-2"
+            >
+              Sign In
+            </Button>
+          )}
+          <ThemeToggle />
+        </div>
       </div>
+
+      {/* Modals */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
+      <Leaderboard 
+        isOpen={showLeaderboard} 
+        onClose={() => setShowLeaderboard(false)} 
+      />
       
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -107,8 +262,38 @@ export default function TypingGame() {
         <GameStats
           gameState={gameState}
           isGameComplete={isGameComplete}
-          totalWords={WORD_LIST.length}
         />
+
+        {/* Stop Button - only show during active game */}
+        {gameState.isGameActive && !isGameComplete && (
+          <div className="text-center mb-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={stopGame}
+              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition-colors"
+            >
+              Stop Game
+            </motion.button>
+          </div>
+        )}
+
+        {/* Words Loading/Error Status */}
+        {isLoadingWords && (
+          <div className="text-center mb-4">
+            <div className="text-gray-600 dark:text-gray-400">
+              Loading fresh words...
+            </div>
+          </div>
+        )}
+        
+        {wordsError && (
+          <div className="text-center mb-4">
+            <div className="text-yellow-600 dark:text-yellow-400 text-sm">
+              {wordsError}
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center justify-center space-x-8 my-16">
           <CompletedWords words={gameState.completedWords} />
@@ -127,7 +312,7 @@ export default function TypingGame() {
               animate={{ scale: 1 }}
               className="text-4xl font-bold text-green-500 dark:text-green-400"
             >
-              🎉 Complete!
+              ⏰ Time&apos;s Up!
             </motion.div>
           )}
         </div>

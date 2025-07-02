@@ -10,7 +10,7 @@ interface WordInputProps {
   targetWord: string;
   isGameActive: boolean;
   isGameComplete: boolean;
-  onStart: () => void;
+  onStart: () => Promise<void>;
 }
 
 export default function WordInput({
@@ -73,7 +73,8 @@ export default function WordInput({
           Start Typing Game
         </motion.button>
         <p className="text-gray-600 dark:text-gray-400 text-center">
-          Type the words as they appear. Press the button to begin!
+          Just start typing! Watch the word above change colors as you type.<br />
+          Fresh words loaded each game!
         </p>
       </div>
     );
@@ -88,7 +89,7 @@ export default function WordInput({
           onClick={onStart}
           className="px-8 py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-xl transition-colors"
         >
-          Play Again
+          Play Again with New Words
         </motion.button>
       </div>
     );
@@ -97,50 +98,49 @@ export default function WordInput({
   const isCorrect = value === targetWord.slice(0, value.length);
   const hasErrors = value.length > 0 && !isCorrect;
 
+    const handleFocus = () => {
+    if (isGameActive && !isGameComplete) {
+      inputRef.current?.focus();
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center space-y-4">
-      <motion.div
-        className="relative"
-        animate={{
-          scale: hasErrors ? [1, 1.02, 1] : 1
-        }}
-        transition={{ duration: 0.2 }}
-      >
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-                      className={`
-            px-6 py-3 text-2xl font-mono text-center rounded-lg border-2 transition-all duration-200 
-            bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-96
-            ${isCorrect ? 'border-green-500 focus:border-green-400' : ''}
-            ${hasErrors ? 'border-red-500 focus:border-red-400' : ''}
-            ${value.length === 0 ? 'border-gray-300 dark:border-gray-600 focus:border-blue-500' : ''}
-            focus:outline-none focus:ring-2 focus:ring-opacity-50
-            ${isCorrect ? 'focus:ring-green-500' : ''}
-            ${hasErrors ? 'focus:ring-red-500' : ''}
-            ${value.length === 0 ? 'focus:ring-blue-500' : ''}
-          `}
-          placeholder="Start typing..."
-          autoComplete="off"
-          spellCheck="false"
-        />
+    <div 
+      className="flex flex-col items-center space-y-4 cursor-text" 
+      onClick={handleFocus}
+    >
+      {/* Hidden input field - invisible but captures keystrokes */}
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        className="absolute opacity-0 pointer-events-none -z-10"
+        autoComplete="off"
+        spellCheck="false"
+        aria-label="Typing input"
+      />
+      
+      {/* Progress and instructions */}
+      <div className="flex flex-col items-center space-y-2">
+        <div className="text-gray-600 dark:text-gray-400 text-sm">
+          Progress: {value.length}/{targetWord.length}
+        </div>
+        
+        <div className="text-center text-gray-500 dark:text-gray-500 text-xs">
+          Just start typing - no input field needed!
+        </div>
         
         {hasErrors && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-red-600 dark:text-red-400 text-sm"
+            className="text-red-600 dark:text-red-400 text-sm"
           >
             Incorrect! Use backspace to fix errors
           </motion.div>
         )}
-      </motion.div>
-      
-      <div className="text-gray-600 dark:text-gray-400 text-sm">
-        Progress: {value.length}/{targetWord.length}
       </div>
     </div>
   );
