@@ -104,7 +104,22 @@ export default function TypingGame() {
   }, [fetchWords]);
 
   const saveScore = useCallback(async (finalGameState: GameState) => {
-    if (!user || scoreSaved || savingScore) return;
+    console.log('saveScore called with:', { 
+      user: user?.id, 
+      scoreSaved, 
+      savingScore, 
+      completedWords: finalGameState.completedWords.length,
+      totalKeystrokes: finalGameState.totalKeystrokes 
+    });
+    
+    if (!user || scoreSaved || savingScore) {
+      console.log('Skipping score save:', { 
+        noUser: !user, 
+        alreadySaved: scoreSaved, 
+        alreadySaving: savingScore 
+      });
+      return;
+    }
 
     const timeElapsed = (60 - finalGameState.timeRemaining) / 60;
     const correctWords = finalGameState.completedWords.filter(word => word.isCorrect).length;
@@ -119,44 +134,67 @@ export default function TypingGame() {
       return;
     }
 
-    console.log('Saving score:', { wpm, accuracy, correctWords, errors: finalGameState.errors, timeElapsed: 60 - finalGameState.timeRemaining });
+    console.log('Attempting to save score:', { 
+      user_id: user.id,
+      wpm, 
+      accuracy, 
+      correctWords, 
+      errors: finalGameState.errors, 
+      timeElapsed: 60 - finalGameState.timeRemaining,
+      timeRemaining: finalGameState.timeRemaining
+    });
+    
     setSavingScore(true);
 
     try {
+      const scoreData = {
+        user_id: user.id,
+        wpm,
+        accuracy,
+        words_typed: correctWords,
+        errors: finalGameState.errors,
+        time_duration: 60 - finalGameState.timeRemaining // Actual time played
+      };
+      
+      console.log('POST /api/scores with data:', scoreData);
+      
       const response = await fetch('/api/scores', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          user_id: user.id,
-          wpm,
-          accuracy,
-          words_typed: correctWords,
-          errors: finalGameState.errors,
-          time_duration: 60 - finalGameState.timeRemaining // Actual time played
-        }),
+        body: JSON.stringify(scoreData),
       });
 
+      console.log('Response status:', response.status);
       const result = await response.json();
+      console.log('Response data:', result);
 
       if (response.ok) {
         setScoreSaved(true);
         console.log('Score saved successfully:', result);
       } else {
-        console.error('Failed to save score:', result);
+        console.error('Failed to save score - API error:', result);
       }
     } catch (error) {
-      console.error('Failed to save score:', error);
+      console.error('Failed to save score - Network error:', error);
     } finally {
       setSavingScore(false);
     }
   }, [user, scoreSaved, savingScore]);
 
   const stopGame = useCallback(() => {
+    console.log('Stop game called');
     // Save score before stopping if there's meaningful progress and user is logged in
     if (user && !scoreSaved && (gameState.completedWords.length > 0 || gameState.totalKeystrokes > 0)) {
+      console.log('Calling saveScore from manual stop');
       saveScore(gameState);
+    } else {
+      console.log('Not saving score on stop:', { 
+        noUser: !user, 
+        alreadySaved: scoreSaved, 
+        noProgress: gameState.completedWords.length === 0 && gameState.totalKeystrokes === 0 
+      });
     }
 
     setGameState({
@@ -231,10 +269,21 @@ export default function TypingGame() {
 
   // End game when time runs out and save score
   useEffect(() => {
+    console.log('Game state check:', { 
+      timeRemaining: gameState.timeRemaining, 
+      isGameActive: gameState.isGameActive,
+      user: user?.id,
+      scoreSaved 
+    });
+    
     if (gameState.timeRemaining === 0 && gameState.isGameActive) {
+      console.log('Game ending - time ran out');
       // Save score BEFORE setting isGameActive to false
       if (user && !scoreSaved) {
+        console.log('Calling saveScore from timer end');
         saveScore(gameState);
+      } else {
+        console.log('Not saving score:', { noUser: !user, alreadySaved: scoreSaved });
       }
       setGameState(prev => ({ ...prev, isGameActive: false }));
     }
