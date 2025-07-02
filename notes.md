@@ -1,8 +1,6 @@
 ## fixes
 
-- start timer on first stroke
-
-- spacebar stroke to send word
+- 
 
 
 
