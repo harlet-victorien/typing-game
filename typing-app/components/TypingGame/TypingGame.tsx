@@ -58,6 +58,7 @@ export default function TypingGame() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [scoreSaved, setScoreSaved] = useState(false);
+  const [savingScore, setSavingScore] = useState(false);
 
   const currentWord = wordList[gameState.currentWordIndex];
   const isGameComplete = gameState.timeRemaining === 0;
@@ -98,10 +99,12 @@ export default function TypingGame() {
       errors: 0,
       totalKeystrokes: 0
     });
+    setScoreSaved(false);
+    setSavingScore(false);
   }, [fetchWords]);
 
   const saveScore = useCallback(async (finalGameState: GameState) => {
-    if (!user || scoreSaved) return;
+    if (!user || scoreSaved || savingScore) return;
 
     const timeElapsed = (60 - finalGameState.timeRemaining) / 60;
     const correctWords = finalGameState.completedWords.filter(word => word.isCorrect).length;
@@ -109,6 +112,15 @@ export default function TypingGame() {
     const accuracy = finalGameState.totalKeystrokes > 0 
       ? Math.round(((finalGameState.totalKeystrokes - finalGameState.errors) / finalGameState.totalKeystrokes) * 100)
       : 100;
+
+    // Only save scores with meaningful data
+    if (correctWords === 0 && finalGameState.totalKeystrokes === 0) {
+      console.log('Skipping score save - no meaningful activity');
+      return;
+    }
+
+    console.log('Saving score:', { wpm, accuracy, correctWords, errors: finalGameState.errors, timeElapsed: 60 - finalGameState.timeRemaining });
+    setSavingScore(true);
 
     try {
       const response = await fetch('/api/scores', {
@@ -122,19 +134,31 @@ export default function TypingGame() {
           accuracy,
           words_typed: correctWords,
           errors: finalGameState.errors,
-          time_duration: 60
+          time_duration: 60 - finalGameState.timeRemaining // Actual time played
         }),
       });
 
+      const result = await response.json();
+
       if (response.ok) {
         setScoreSaved(true);
+        console.log('Score saved successfully:', result);
+      } else {
+        console.error('Failed to save score:', result);
       }
     } catch (error) {
       console.error('Failed to save score:', error);
+    } finally {
+      setSavingScore(false);
     }
-  }, [user, scoreSaved]);
+  }, [user, scoreSaved, savingScore]);
 
   const stopGame = useCallback(() => {
+    // Save score before stopping if there's meaningful progress and user is logged in
+    if (user && !scoreSaved && (gameState.completedWords.length > 0 || gameState.totalKeystrokes > 0)) {
+      saveScore(gameState);
+    }
+
     setGameState({
       currentWordIndex: 0,
       completedWords: [],
@@ -146,7 +170,8 @@ export default function TypingGame() {
       totalKeystrokes: 0
     });
     setScoreSaved(false);
-  }, []);
+    setSavingScore(false);
+  }, [user, scoreSaved, gameState, saveScore]);
 
   const handleInputChange = useCallback((value: string) => {
     if (!gameState.isGameActive || isGameComplete) return;
@@ -207,13 +232,13 @@ export default function TypingGame() {
   // End game when time runs out and save score
   useEffect(() => {
     if (gameState.timeRemaining === 0 && gameState.isGameActive) {
-      setGameState(prev => ({ ...prev, isGameActive: false }));
-      // Save score when game ends
-      if (user) {
+      // Save score BEFORE setting isGameActive to false
+      if (user && !scoreSaved) {
         saveScore(gameState);
       }
+      setGameState(prev => ({ ...prev, isGameActive: false }));
     }
-  }, [gameState.timeRemaining, gameState.isGameActive, gameState, user, saveScore]);
+  }, [gameState.timeRemaining, gameState.isGameActive, gameState, user, saveScore, scoreSaved]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center justify-center p-8 transition-colors duration-200">
@@ -275,6 +300,25 @@ export default function TypingGame() {
             >
               Stop Game
             </motion.button>
+          </div>
+        )}
+
+        {/* Score Saving Indicator */}
+        {savingScore && (
+          <div className="text-center mb-4">
+            <div className="text-blue-600 dark:text-blue-400 text-sm flex items-center justify-center space-x-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400"></div>
+              <span>Saving your score...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Score Saved Confirmation */}
+        {scoreSaved && !savingScore && isGameComplete && (
+          <div className="text-center mb-4">
+            <div className="text-green-600 dark:text-green-400 text-sm flex items-center justify-center space-x-2">
+              <span>✅ Score saved to leaderboard!</span>
+            </div>
           </div>
         )}
 
