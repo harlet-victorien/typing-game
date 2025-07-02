@@ -6,13 +6,18 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { user_id, wpm, accuracy, words_typed, errors, time_duration } = body;
 
+    console.log('POST /api/scores - Received data:', { user_id, wpm, accuracy, words_typed, errors, time_duration });
+
     // Validate required fields
     if (!user_id || typeof wpm !== 'number' || typeof accuracy !== 'number') {
+      console.log('Validation failed:', { user_id: !!user_id, wpm: typeof wpm, accuracy: typeof accuracy });
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
+
+    console.log('Validation passed, attempting database insert...');
 
     // Insert score into database
     const { data, error } = await supabase
@@ -29,13 +34,19 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Database error:', error);
+      console.error('Database error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
       return NextResponse.json(
-        { error: 'Failed to save score' },
+        { error: 'Failed to save score', dbError: error },
         { status: 500 }
       );
     }
 
+    console.log('Score saved successfully:', data);
     return NextResponse.json({ success: true, score: data });
   } catch (error) {
     console.error('API error:', error);
