@@ -75,13 +75,10 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const user_id = searchParams.get('user_id');
 
-    // Get all scores and process on the client side to find best per user
+    // Get all scores first
     let scoresQuery = supabaseAdmin
       .from('scores')
-      .select(`
-        *,
-        profiles(id, email, username)
-      `)
+      .select('*')
       .order('wpm', { ascending: false })
       .limit(1000); // Get more scores to find best per user
 
@@ -109,8 +106,28 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Convert to array, sort by WPM, and limit results
+    // Get unique user IDs from the best scores
+    const userIds = Array.from(userBestScores.keys());
+
+    // Fetch profiles for these users
+    let profilesData: Array<{ id: string; email: string; username: string | null }> = [];
+    if (userIds.length > 0) {
+      const { data: profiles, error: profilesError } = await supabaseAdmin
+        .from('profiles')
+        .select('id, email, username')
+        .in('id', userIds);
+
+      if (!profilesError) {
+        profilesData = profiles || [];
+      }
+    }
+
+    // Combine scores with profiles
     const bestScores = Array.from(userBestScores.values())
+      .map(score => ({
+        ...score,
+        profiles: profilesData.find(profile => profile.id === score.user_id)
+      }))
       .sort((a, b) => b.wpm - a.wpm)
       .slice(0, limit);
 
