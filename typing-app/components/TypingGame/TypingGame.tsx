@@ -381,14 +381,7 @@ export default function TypingGame() {
             </div>
           )}
 
-          {/* Score Saved Confirmation */}
-          {scoreSaved && !savingScore && isGameComplete && (
-            <div className="text-center mb-4">
-              <div className="text-green-200 text-sm flex items-center justify-center space-x-2 bg-green-900/20 backdrop-blur-sm px-4 py-2 rounded-lg border border-green-400/30">
-                <span>✅ Score saved to leaderboard!</span>
-              </div>
-            </div>
-          )}
+
 
           {/* Words Loading/Error Status - Only show errors */}
           {wordsError && (
