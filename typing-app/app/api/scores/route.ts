@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       .from('scores')
       .select(`
         *,
-        profiles!scores_user_id_fkey (
+        profiles (
           email,
           username
         )
