@@ -7,6 +7,7 @@ interface WordInputProps {
   value: string;
   onChange: (value: string) => void;
   onKeyPress: (isCorrect: boolean) => void;
+  onKeyDown: (key: string) => void;
   targetWord: string;
   isGameActive: boolean;
   isGameComplete: boolean;
@@ -17,6 +18,7 @@ export default function WordInput({
   value,
   onChange,
   onKeyPress,
+  onKeyDown,
   targetWord,
   isGameActive,
   isGameComplete,
@@ -50,8 +52,17 @@ export default function WordInput({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Call the parent's onKeyDown handler
+    onKeyDown(e.key);
+    
     // Allow backspace to correct mistakes
     if (e.key === 'Backspace') {
+      return;
+    }
+    
+    // Handle spacebar for word completion
+    if (e.key === ' ') {
+      e.preventDefault(); // Prevent space from being added to input
       return;
     }
     
@@ -73,8 +84,8 @@ export default function WordInput({
           Start Typing Game
         </motion.button>
         <p className="text-gray-600 dark:text-gray-400 text-center">
-          Just start typing! Watch the word above change colors as you type.<br />
-          Fresh words loaded each game!
+          Just start typing! Timer starts on your first keystroke.<br />
+          Press SPACEBAR to complete each word. Fresh words loaded each game!
         </p>
       </div>
     );
@@ -129,7 +140,7 @@ export default function WordInput({
         </div>
         
         <div className="text-center text-gray-500 dark:text-gray-500 text-xs">
-          Just start typing - no input field needed!
+          Type the word and press SPACEBAR to complete it!
         </div>
         
         {hasErrors && (
@@ -138,7 +149,7 @@ export default function WordInput({
             animate={{ opacity: 1, y: 0 }}
             className="text-red-600 dark:text-red-400 text-sm"
           >
-            Incorrect! Use backspace to fix errors
+            Incorrect! Use backspace to fix errors, then press SPACEBAR
           </motion.div>
         )}
       </div>

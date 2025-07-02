@@ -27,6 +27,7 @@ export interface GameState {
   completedWords: Array<{ word: string; timestamp: number; isCorrect: boolean }>;
   currentInput: string;
   isGameActive: boolean;
+  hasStartedTyping: boolean;
   startTime: number | null;
   timeRemaining: number; // in seconds
   errors: number;
@@ -46,6 +47,7 @@ export default function TypingGame() {
     completedWords: [],
     currentInput: '',
     isGameActive: false,
+    hasStartedTyping: false,
     startTime: null,
     timeRemaining: 60,
     errors: 0,
@@ -100,6 +102,7 @@ export default function TypingGame() {
       completedWords: [],
       currentInput: '',
       isGameActive: true,
+      hasStartedTyping: false,
       startTime: Date.now(),
       timeRemaining: 60,
       errors: 0,
@@ -197,6 +200,7 @@ export default function TypingGame() {
       completedWords: [],
       currentInput: '',
       isGameActive: false,
+      hasStartedTyping: false,
       startTime: null,
       timeRemaining: 60,
       errors: 0,
@@ -209,15 +213,34 @@ export default function TypingGame() {
   const handleInputChange = useCallback((value: string) => {
     if (!gameState.isGameActive || isGameComplete) return;
 
+    // Set hasStartedTyping to true on first keystroke
+    const isFirstKeystroke = !gameState.hasStartedTyping && value.length === 1;
+    
     setGameState(prev => ({
       ...prev,
       currentInput: value,
+      hasStartedTyping: prev.hasStartedTyping || isFirstKeystroke,
       totalKeystrokes: prev.totalKeystrokes + 1
     }));
 
-    // Check if word is completed (either correctly or with errors)
-    if (value.length === currentWord.length) {
-      const isCorrect = value === currentWord;
+    // Word completion is now handled by spacebar in handleKeyDown
+  }, [gameState.isGameActive, gameState.hasStartedTyping, isGameComplete]);
+
+  const handleKeyPress = useCallback((isCorrect: boolean) => {
+    if (!isCorrect) {
+      setGameState(prev => ({
+        ...prev,
+        errors: prev.errors + 1
+      }));
+    }
+  }, []);
+
+  const handleKeyDown = useCallback((key: string) => {
+    if (!gameState.isGameActive || isGameComplete) return;
+
+    // Handle spacebar for word completion
+    if (key === ' ') {
+      const isCorrect = gameState.currentInput === currentWord;
       const newCompletedWord = {
         word: currentWord,
         timestamp: Date.now(),
@@ -231,22 +254,13 @@ export default function TypingGame() {
         currentInput: ''
       }));
     }
-  }, [gameState.isGameActive, isGameComplete, currentWord, wordList.length]);
+  }, [gameState.isGameActive, gameState.currentInput, isGameComplete, currentWord, wordList.length]);
 
-  const handleKeyPress = useCallback((isCorrect: boolean) => {
-    if (!isCorrect) {
-      setGameState(prev => ({
-        ...prev,
-        errors: prev.errors + 1
-      }));
-    }
-  }, []);
-
-  // Countdown timer effect
+  // Countdown timer effect - only start when user has started typing
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
-    if (gameState.isGameActive && gameState.timeRemaining > 0) {
+    if (gameState.isGameActive && gameState.hasStartedTyping && gameState.timeRemaining > 0) {
       interval = setInterval(() => {
         setGameState(prev => ({
           ...prev,
@@ -260,7 +274,7 @@ export default function TypingGame() {
         clearInterval(interval);
       }
     };
-  }, [gameState.isGameActive, gameState.timeRemaining]);
+  }, [gameState.isGameActive, gameState.hasStartedTyping, gameState.timeRemaining]);
 
   // End game when time runs out and save score
   useEffect(() => {
@@ -410,6 +424,7 @@ export default function TypingGame() {
           value={gameState.currentInput}
           onChange={handleInputChange}
           onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyDown}
           targetWord={currentWord}
           isGameActive={gameState.isGameActive}
           isGameComplete={isGameComplete}

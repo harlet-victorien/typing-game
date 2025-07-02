@@ -1,3 +1,11 @@
+## fixes
+
+- start timer on first stroke
+
+- spacebar stroke to send word
+
+
+
 ## core features
 
 - realtime wpm graph
