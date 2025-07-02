@@ -6,17 +6,19 @@ interface CurrentWordProps {
   word: string;
   currentInput: string;
   isActive: boolean;
+  upcomingWords?: string[];
 }
 
-export default function CurrentWord({ word, currentInput, isActive }: CurrentWordProps) {
+export default function CurrentWord({ word, currentInput, isActive, upcomingWords = [] }: CurrentWordProps) {
   return (
     <motion.div
       key={word}
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.8 }}
-      className="flex justify-center items-center"
+      className="flex flex-col justify-center items-center space-y-6"
     >
+      {/* Current Word - Largest */}
       <div className="text-6xl font-mono font-bold tracking-wider">
         {word.split('').map((letter, index) => {
           let status = 'upcoming';
@@ -54,6 +56,30 @@ export default function CurrentWord({ word, currentInput, isActive }: CurrentWor
           );
         })}
       </div>
+
+      {/* Next Word - Medium Size */}
+      {upcomingWords[0] && (
+        <motion.div 
+          className="text-4xl font-mono font-medium tracking-wide text-gray-500 dark:text-gray-400 opacity-60"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 0.6, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          {upcomingWords[0]}
+        </motion.div>
+      )}
+
+      {/* Second Next Word - Small Size */}
+      {upcomingWords[1] && (
+        <motion.div 
+          className="text-2xl font-mono tracking-wide text-gray-400 dark:text-gray-500 opacity-40"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 0.4, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          {upcomingWords[1]}
+        </motion.div>
+      )}
     </motion.div>
   );
 } 

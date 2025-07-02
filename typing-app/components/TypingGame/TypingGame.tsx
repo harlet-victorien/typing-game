@@ -63,6 +63,12 @@ export default function TypingGame() {
   const currentWord = wordList[gameState.currentWordIndex];
   const isGameComplete = gameState.timeRemaining === 0;
 
+  // Calculate upcoming words for preview
+  const upcomingWords = [
+    wordList[(gameState.currentWordIndex + 1) % wordList.length],
+    wordList[(gameState.currentWordIndex + 2) % wordList.length]
+  ];
+
   // Fetch fresh words from API
   const fetchWords = useCallback(async () => {
     setIsLoadingWords(true);
@@ -184,18 +190,7 @@ export default function TypingGame() {
   }, [user, scoreSaved, savingScore]);
 
   const stopGame = useCallback(() => {
-    console.log('Stop game called');
-    // Save score before stopping if there's meaningful progress and user is logged in
-    if (user && !scoreSaved && (gameState.completedWords.length > 0 || gameState.totalKeystrokes > 0)) {
-      console.log('Calling saveScore from manual stop');
-      saveScore(gameState);
-    } else {
-      console.log('Not saving score on stop:', { 
-        noUser: !user, 
-        alreadySaved: scoreSaved, 
-        noProgress: gameState.completedWords.length === 0 && gameState.totalKeystrokes === 0 
-      });
-    }
+    console.log('Stop game called - not saving score (incomplete session)');
 
     setGameState({
       currentWordIndex: 0,
@@ -209,7 +204,7 @@ export default function TypingGame() {
     });
     setScoreSaved(false);
     setSavingScore(false);
-  }, [user, scoreSaved, gameState, saveScore]);
+  }, []);
 
   const handleInputChange = useCallback((value: string) => {
     if (!gameState.isGameActive || isGameComplete) return;
@@ -396,6 +391,7 @@ export default function TypingGame() {
               word={currentWord}
               currentInput={gameState.currentInput}
               isActive={gameState.isGameActive}
+              upcomingWords={upcomingWords}
             />
           )}
           
