@@ -362,15 +362,6 @@ export default function TypingGame() {
             isGameComplete={isGameComplete}
           />
 
-          {/* Score Saving Indicator */}
-          {savingScore && (
-            <div className="text-center mb-4">
-              <div className="text-blue-200 text-sm flex items-center justify-center space-x-2 bg-blue-900/20 backdrop-blur-sm px-4 py-2 rounded-lg border border-blue-400/30">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-200"></div>
-                <span>Saving your score...</span>
-              </div>
-            </div>
-          )}
 
 
 
