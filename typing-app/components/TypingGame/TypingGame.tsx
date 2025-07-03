@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import CurrentWord from './CurrentWord';
 import CompletedWords from './CompletedWords';
 import WordInput from './WordInput';
-import GameStats from './GameStats';
 import { ThemeToggle } from '../ThemeToggle';
 import { useAuth } from '../auth/AuthProvider';
 import AuthModal from '../auth/AuthModal';
@@ -13,7 +12,7 @@ import UserProfile from '../auth/UserProfile';
 import Leaderboard from '../Leaderboard';
 import ThemeSelector from '../ThemeSelector';
 import { Button } from '../ui/button';
-import { Progress } from '../ui/progress';
+import { ChartLineDefault } from '../LineChart';
 
 // Default fallback words in case API fails
 const FALLBACK_WORDS = [
@@ -23,6 +22,9 @@ const FALLBACK_WORDS = [
   'nodejs', 'express', 'mongodb', 'postgresql', 'firebase',
   'vercel', 'github', 'coding', 'algorithms', 'functions'
 ];
+
+// WPM tracking interval in seconds - change this to adjust how often WPM data points are recorded
+const WPM_TRACKING_INTERVAL = 5;
 
 export interface GameState {
   currentWordIndex: number;
@@ -34,6 +36,11 @@ export interface GameState {
   timeRemaining: number; // in seconds
   errors: number;
   totalKeystrokes: number;
+}
+
+interface WPMDataPoint {
+  time: number;
+  wpm: number;
 }
 
 interface WordsResponse {
@@ -65,9 +72,18 @@ export default function TypingGame() {
   const [selectedTheme, setSelectedTheme] = useState('default');
   const [scoreSaved, setScoreSaved] = useState(false);
   const [savingScore, setSavingScore] = useState(false);
+  const [chartData, setChartData] = useState<WPMDataPoint[]>([{ time: 0, wpm: 50 }]);
+  const gameStateRef = useRef(gameState);
+
+  // Update the ref whenever gameState changes
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
 
   const currentWord = wordList[gameState.currentWordIndex];
   const isGameComplete = gameState.timeRemaining === 0;
+  
+  // Chart data is managed separately and only updates when we explicitly want to refresh
 
   // Calculate upcoming words for preview
   const upcomingWords = [
@@ -111,6 +127,7 @@ export default function TypingGame() {
     });
     setScoreSaved(false);
     setSavingScore(false);
+    setChartData([{ time: 0, wpm: 50 }]); // Reset chart data
   }, [fetchWords, selectedTheme]);
 
   const saveScore = useCallback(async (finalGameState: GameState) => {
@@ -209,6 +226,7 @@ export default function TypingGame() {
     });
     setScoreSaved(false);
     setSavingScore(false);
+    setChartData([{ time: 0, wpm: 50 }]); // Reset chart data
   }, []);
 
   const handleInputChange = useCallback((value: string) => {
@@ -289,6 +307,36 @@ export default function TypingGame() {
     };
   }, [gameState.isGameActive, gameState.hasStartedTyping, gameState.timeRemaining]);
 
+  // WPM tracking effect - record WPM every 5 seconds
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (gameState.isGameActive && gameState.hasStartedTyping) {
+      interval = setInterval(() => {
+        const currentState = gameStateRef.current;
+        if (currentState.timeRemaining > 0 && currentState.isGameActive) {
+          const timeElapsed = (60 - currentState.timeRemaining) / 60; // in minutes
+          const correctWords = currentState.completedWords.filter(word => word.isCorrect).length;
+          const wpm = timeElapsed > 0 ? Math.round(correctWords / timeElapsed) : 0;
+          const currentTime = 60 - currentState.timeRemaining; // seconds elapsed
+          
+                    console.log('Adding WPM data point:', { time: currentTime, wpm, correctWords, timeElapsed });
+          setChartData(prev => {
+            const newData = [...prev, { time: currentTime, wpm }];
+            console.log('Chart data updated with', newData.length, 'data points');
+            return newData;
+          });
+          }
+        }, WPM_TRACKING_INTERVAL * 1000); // Convert seconds to milliseconds
+    }
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [gameState.isGameActive, gameState.hasStartedTyping]); // Simplified dependencies
+
   // End game when time runs out and save score
   useEffect(() => {
     console.log('Game state check:', { 
@@ -300,6 +348,17 @@ export default function TypingGame() {
     
     if (gameState.timeRemaining === 0 && gameState.isGameActive) {
       console.log('Game ending - time ran out');
+      
+      // Add final WPM point at 60 seconds
+      const correctWords = gameState.completedWords.filter(word => word.isCorrect).length;
+      const wpm = Math.round(correctWords / 1); // 1 minute elapsed
+      console.log('Adding final WPM data point:', { time: 60, wpm, correctWords });
+      setChartData(prev => {
+        const newData = [...prev, { time: 60, wpm }];
+        console.log('Chart data updated with', newData.length, 'data points');
+        return newData;
+      });
+      
       // Save score BEFORE setting isGameActive to false
       if (user && !scoreSaved) {
         console.log('Calling saveScore from timer end');
@@ -316,7 +375,7 @@ export default function TypingGame() {
   }, [gameState.timeRemaining, gameState.isGameActive, gameState, user, saveScore, scoreSaved]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 pb-20 sm:pb-24 md:pb-28 transition-colors duration-200 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 transition-colors duration-200 relative overflow-hidden">
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-6xl">
@@ -352,6 +411,39 @@ export default function TypingGame() {
           </div>
         </div>
 
+        {/* Game Controls - Absolutely centered on screen */}
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-20">
+          {!gameState.isGameActive && !isGameComplete && (
+            <Button
+              onClick={startGame}
+              variant="default"
+              size="lg"
+            >
+              🚀 Start Typing Challenge
+            </Button>
+          )}
+
+          {gameState.isGameActive && !isGameComplete && (
+            <Button
+              onClick={stopGame}
+              variant="destructive"
+              size="lg"
+            >
+              ⏹️ End Session
+            </Button>
+          )}
+
+          {isGameComplete && (
+            <Button
+              onClick={startGame}
+              variant="default"
+              size="lg"
+            >
+              🎯 Play Again
+            </Button>
+          )}
+        </div>
+
         {/* Modals */}
         <AuthModal 
           isOpen={showAuthModal} 
@@ -373,11 +465,11 @@ export default function TypingGame() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full"
         >
-          <GameStats
-            gameState={gameState}
-            isGameComplete={isGameComplete}
-          />
-          <Progress value={100 - (gameState.timeRemaining * (100 / 60))} />
+         <div className="flex flex-col items-center justify-center h-[calc(40vh-4rem)] relative mt-12 p-4">
+              <div className="w-full h-full">
+                <ChartLineDefault data={chartData} />
+              </div>
+             </div>
 
 
 
@@ -391,7 +483,7 @@ export default function TypingGame() {
           )}
 
           {/* Main typing area - centered with completed words on the left */}
-          <div className="flex items-center justify-center min-h-[50vh] relative my-16">
+          <div className="flex items-center justify-center min-h-[calc(60vh-4rem)] relative my-0">
             {/* Completed words - positioned on the left */}
             {!isGameComplete && (
               <div className="absolute left-4 top-1/2 transform -translate-y-1/2 hidden lg:block">
@@ -433,167 +525,7 @@ export default function TypingGame() {
         </motion.div>
       </div>
 
-      {/* Fixed Game Controls - Always at bottom with responsive sizing */}
-      <div className="fixed bottom-0 left-0 right-0 z-5 pb-4 sm:pb-6 md:pb-8 pointer-events-none">
-        <div className="flex justify-center px-4 sm:px-6 md:px-8">
-          {!gameState.isGameActive && !isGameComplete && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="relative pointer-events-auto"
-            >
-              {/* Glowing background effect */}
-              <div className="absolute inset-y-0 left-8 right-8"></div>
-              
-              <motion.button
-                whileHover={{ 
-                  scale: 1.05,
-                  boxShadow: "0 0 12px rgba(69, 90, 120, 0.4)"
-                }}
-                whileTap={{ scale: 0.95 }}
-                onClick={startGame}
-                className="relative px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-6 bg-primary/90 backdrop-blur-sm border border-border text-primary-foreground rounded-full font-bold text-sm sm:text-lg md:text-xl transition-all duration-300 hover:bg-primary group"
-              >
-                <div className="flex items-center space-x-2 sm:space-x-3">
-                  <motion.div
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 border-2 border-primary-foreground/60 border-t-primary-foreground rounded-full"
-                  ></motion.div>
-                  <span className="whitespace-nowrap">Start Typing Challenge</span>
-                  <motion.div
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="text-lg sm:text-xl md:text-2xl"
-                  >
-                    🚀
-                  </motion.div>
-                </div>
-                
-                {/* Particle effects on hover */}
-                <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-primary-foreground/60 rounded-full animate-ping"></div>
-                  <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-primary-foreground/40 rounded-full animate-pulse"></div>
-                  <div className="absolute bottom-1/3 left-1/4 w-1 h-1 bg-primary-foreground/40 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                </div>
-              </motion.button>
-            </motion.div>
-          )}
 
-          {gameState.isGameActive && !isGameComplete && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="relative pointer-events-auto"
-            >
-              {/* Pulsing warning effect */}
-              <div className="absolute inset-y-0 left-8 right-8"></div>
-              
-              <motion.button
-                whileHover={{ 
-                  scale: 1.05,
-                  boxShadow: "0 0 15px rgba(140, 69, 69, 0.4)"
-                }}
-                whileTap={{ scale: 0.95 }}
-                onClick={stopGame}
-                className="relative px-4 sm:px-6 md:px-8 py-3 sm:py-4 bg-destructive/90 backdrop-blur-sm border border-border text-primary-foreground rounded-full font-bold text-sm sm:text-base md:text-lg transition-all duration-300 hover:bg-destructive group"
-              >
-                <div className="flex items-center space-x-2 sm:space-x-3">
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 1, repeat: Infinity }}
-                    className="text-lg sm:text-xl"
-                  >
-                    ⏹️
-                  </motion.div>
-                  <span className="whitespace-nowrap">End Session</span>
-                  <motion.div
-                    animate={{ rotate: [0, 10, -10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="text-base sm:text-lg"
-                  >
-                    ⚠️
-                  </motion.div>
-                </div>
-                
-                {/* Warning pulse effect */}
-                <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-destructive/60 rounded-full animate-ping"></div>
-                </div>
-              </motion.button>
-            </motion.div>
-          )}
-
-          {isGameComplete && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="relative pointer-events-auto"
-            >
-              {/* Celebration background effect */}
-              <div className="absolute inset-y-0 left-8 right-8"></div>
-              
-              <motion.button
-                whileHover={{ 
-                  scale: 1.05,
-                  boxShadow: "0 0 15px rgba(69, 90, 120, 0.4)"
-                }}
-                whileTap={{ scale: 0.95 }}
-                onClick={startGame}
-                className="relative px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-6 bg-primary/90 backdrop-blur-sm border border-border text-primary-foreground rounded-full font-bold text-sm sm:text-lg md:text-xl transition-all duration-300 hover:bg-primary group"
-              >
-                <div className="flex items-center space-x-2 sm:space-x-3">
-                  <motion.div
-                    animate={{ 
-                      rotate: [0, 360],
-                      scale: [1, 1.1, 1]
-                    }}
-                    transition={{ 
-                      rotate: { duration: 2, repeat: Infinity, ease: "linear" },
-                      scale: { duration: 1, repeat: Infinity }
-                    }}
-                    className="text-lg sm:text-xl md:text-2xl"
-                  >
-                    🎯
-                  </motion.div>
-                  <span className="whitespace-nowrap">Play Again with New Words</span>
-                  <motion.div
-                    animate={{ y: [0, -5, 0] }}
-                    transition={{ duration: 1, repeat: Infinity }}
-                    className="text-lg sm:text-xl md:text-2xl"
-                  >
-                    🚀
-                  </motion.div>
-                </div>
-                
-                {/* Celebration particles */}
-                <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <motion.div 
-                    animate={{ 
-                      y: [0, -20, 0],
-                      opacity: [0, 1, 0]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="absolute top-1/4 left-1/4 text-accent-foreground text-lg"
-                  >
-                    ✨
-                  </motion.div>
-                  <motion.div 
-                    animate={{ 
-                      y: [0, -15, 0],
-                      opacity: [0, 1, 0]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                    className="absolute top-1/3 right-1/4 text-accent-foreground text-lg"
-                  >
-                    💫
-                  </motion.div>
-                </div>
-              </motion.button>
-            </motion.div>
-          )}
-        </div>
-      </div>
     </div>
   );
 } 

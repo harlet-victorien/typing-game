@@ -1,16 +1,7 @@
 "use client"
 
-import { TrendingUp } from "lucide-react"
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import {
   ChartConfig,
   ChartContainer,
@@ -20,34 +11,29 @@ import {
 
 export const description = "A line chart"
 
-const chartData = [
-  { month: "January", desktop: 186 },
-  { month: "February", desktop: 305 },
-  { month: "March", desktop: 237 },
-  { month: "April", desktop: 73 },
-  { month: "May", desktop: 209 },
-  { month: "June", desktop: 214 },
-]
+interface ChartDataPoint {
+  time: number;
+  wpm: number;
+}
+
+interface ChartLineDefaultProps {
+  data?: ChartDataPoint[];
+}
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
+  wpm: {
+    label: "WPM",
     color: "var(--chart-1)",
   },
 } satisfies ChartConfig
 
-export function ChartLineDefault() {
+export function ChartLineDefault({ data = [] }: ChartLineDefaultProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Line Chart</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
+
+        <ChartContainer config={chartConfig} className="w-full h-full z-5">
           <LineChart
             accessibilityLayer
-            data={chartData}
+            data={data}
             margin={{
               left: 12,
               right: 12,
@@ -55,34 +41,28 @@ export function ChartLineDefault() {
           >
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="month"
+              dataKey="time"
+              type="number"
+              domain={[0, 60]}
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
             />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
             />
             <Line
-              dataKey="desktop"
+              dataKey="wpm"
               type="natural"
-              stroke="var(--color-desktop)"
+              stroke="var(--color-wpm)"
               strokeWidth={2}
               dot={false}
+              isAnimationActive={false}
+              animationDuration={100}
             />
           </LineChart>
         </ChartContainer>
-      </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="text-muted-foreground leading-none">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
-    </Card>
+
   )
 }
