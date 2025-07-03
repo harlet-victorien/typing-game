@@ -11,7 +11,9 @@ import { useAuth } from '../auth/AuthProvider';
 import AuthModal from '../auth/AuthModal';
 import UserProfile from '../auth/UserProfile';
 import Leaderboard from '../Leaderboard';
+import ThemeSelector from '../ThemeSelector';
 import { Button } from '../ui/button';
+import { Progress } from '../ui/progress';
 
 // Default fallback words in case API fails
 const FALLBACK_WORDS = [
@@ -37,6 +39,7 @@ export interface GameState {
 interface WordsResponse {
   words: string[];
   count: number;
+  theme: string;
   timestamp: string;
 }
 
@@ -58,6 +61,8 @@ export default function TypingGame() {
   const [wordsError, setWordsError] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState('default');
   const [scoreSaved, setScoreSaved] = useState(false);
   const [savingScore, setSavingScore] = useState(false);
 
@@ -71,11 +76,11 @@ export default function TypingGame() {
   ];
 
   // Fetch fresh words from API
-  const fetchWords = useCallback(async () => {
+  const fetchWords = useCallback(async (theme: string = 'default') => {
     setWordsError(null);
     
     try {
-      const response = await fetch('/api/words');
+      const response = await fetch(`/api/words?theme=${theme}`);
       if (!response.ok) {
         throw new Error('Failed to fetch words');
       }
@@ -91,7 +96,7 @@ export default function TypingGame() {
 
   const startGame = useCallback(async () => {
     // Fetch fresh words before starting the game
-    await fetchWords();
+    await fetchWords(selectedTheme);
     
     setGameState({
       currentWordIndex: 0,
@@ -106,7 +111,7 @@ export default function TypingGame() {
     });
     setScoreSaved(false);
     setSavingScore(false);
-  }, [fetchWords]);
+  }, [fetchWords, selectedTheme]);
 
   const saveScore = useCallback(async (finalGameState: GameState) => {
     console.log('saveScore called with:', { 
@@ -313,7 +318,6 @@ export default function TypingGame() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 pb-20 sm:pb-24 md:pb-28 transition-colors duration-200 relative overflow-hidden">
 
-      
       {/* Content */}
       <div className="relative z-10 w-full max-w-6xl">
         {/* Header with controls */}
@@ -324,6 +328,12 @@ export default function TypingGame() {
               variant="default"
             >
               🏆 Leaderboard
+            </Button>
+            <Button
+              onClick={() => setShowThemeSelector(true)}
+              variant="outline"
+            >
+              🎨 Themes
             </Button>
           </div>
           
@@ -351,6 +361,12 @@ export default function TypingGame() {
           isOpen={showLeaderboard} 
           onClose={() => setShowLeaderboard(false)} 
         />
+        <ThemeSelector 
+          isOpen={showThemeSelector} 
+          onClose={() => setShowThemeSelector(false)}
+          currentTheme={selectedTheme}
+          onThemeChange={setSelectedTheme}
+        />
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -361,7 +377,7 @@ export default function TypingGame() {
             gameState={gameState}
             isGameComplete={isGameComplete}
           />
-
+          <Progress value={100 - (gameState.timeRemaining * (100 / 60))} />
 
 
 
@@ -418,7 +434,7 @@ export default function TypingGame() {
       </div>
 
       {/* Fixed Game Controls - Always at bottom with responsive sizing */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 pb-4 sm:pb-6 md:pb-8 pointer-events-none">
+      <div className="fixed bottom-0 left-0 right-0 z-5 pb-4 sm:pb-6 md:pb-8 pointer-events-none">
         <div className="flex justify-center px-4 sm:px-6 md:px-8">
           {!gameState.isGameActive && !isGameComplete && (
             <motion.div

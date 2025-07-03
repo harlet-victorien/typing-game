@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
+import { readFile } from 'fs/promises';
+import path from 'path';
 
-// Top 300 Most Common English Words
-const WORD_BANK = [
+// Default word bank as fallback
+const DEFAULT_WORDS = [
   'the', 'of', 'to', 'and', 'a', 'in', 'is', 'it', 'you', 'that', 'he', 'was', 'for', 'on', 'are',
   'as', 'with', 'his', 'they', 'I', 'at', 'be', 'this', 'have', 'from', 'or', 'one', 'had', 'by',
   'word', 'but', 'not', 'what', 'all', 'were', 'we', 'when', 'your', 'can', 'said', 'there', 'use',
@@ -38,14 +40,50 @@ const WORD_BANK = [
   'I\'ll', 'unit', 'figure', 'certain', 'field', 'travel', 'wood', 'fire', 'upon'
 ];
 
-export async function GET() {
+async function loadThemeWords(theme: string): Promise<string[]> {
   try {
-    // Shuffle the word bank and return all 300 words
-    const shuffled = [...WORD_BANK].sort(() => Math.random() - 0.5);
+    const themePath = path.join(process.cwd(), 'themes', `${theme}.txt`);
+    const content = await readFile(themePath, 'utf-8');
+    
+    // Split by lines and filter out empty lines
+    const words = content
+      .split('\n')
+      .map(word => word.trim())
+      .filter(word => word.length > 0);
+    
+    return words;
+  } catch (error) {
+    console.error(`Error loading theme ${theme}:`, error);
+    return [];
+  }
+}
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const theme = searchParams.get('theme') || 'default';
+    
+    let words: string[];
+    
+    if (theme === 'default') {
+      words = DEFAULT_WORDS;
+    } else {
+      words = await loadThemeWords(theme);
+      
+      // Fallback to default if theme fails to load
+      if (words.length === 0) {
+        console.warn(`Theme ${theme} not found or empty, using default`);
+        words = DEFAULT_WORDS;
+      }
+    }
+    
+    // Shuffle the words and return them
+    const shuffled = [...words].sort(() => Math.random() - 0.5);
     
     return NextResponse.json({
       words: shuffled,
       count: shuffled.length,
+      theme: theme,
       timestamp: new Date().toISOString()
     });
     
