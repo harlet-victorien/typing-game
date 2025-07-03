@@ -304,8 +304,8 @@ export default function TypingGame() {
       }
       setGameState(prev => ({ 
         ...prev, 
-        isGameActive: false,
-        completedWords: [] // Clear completed words when game ends
+        isGameActive: false
+        // Keep completedWords and other stats visible after game ends
       }));
     }
   }, [gameState.timeRemaining, gameState.isGameActive, gameState, user, saveScore, scoreSaved]);
