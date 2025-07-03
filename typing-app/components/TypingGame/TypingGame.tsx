@@ -442,7 +442,7 @@ export default function TypingGame() {
                   }}
                   whileTap={{ scale: 0.95 }}
                   onClick={startGame}
-                  className="relative px-12 py-6 bg-gradient-to-r from-blue-600/80 to-purple-600/80 backdrop-blur-sm border border-white/30 text-white rounded-full font-bold text-xl transition-all duration-300 hover:from-blue-500/90 hover:to-purple-500/90 group"
+                  className="relative px-12 py-6 bg-gradient-to-r from-green-800/80 to-green-200/80 backdrop-blur-sm border border-white/30 text-white rounded-full font-bold text-xl transition-all duration-300 hover:from-green-500/90 hover:to-green-200/90 group"
                 >
                   <div className="flex items-center space-x-3">
                     <motion.div
