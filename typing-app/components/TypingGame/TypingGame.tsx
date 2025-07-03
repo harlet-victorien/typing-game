@@ -311,7 +311,7 @@ export default function TypingGame() {
   }, [gameState.timeRemaining, gameState.isGameActive, gameState, user, saveScore, scoreSaved]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 transition-colors duration-200 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 pb-20 sm:pb-24 md:pb-28 transition-colors duration-200 relative overflow-hidden">
 
       
       {/* Content */}
@@ -423,167 +423,169 @@ export default function TypingGame() {
             isGameActive={gameState.isGameActive}
             isGameComplete={isGameComplete}
           />
-
-          {/* Smart Game Controls - Positioned below the words */}
-          <div className="text-center mt-16 mb-8">
-            {!gameState.isGameActive && !isGameComplete && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="relative"
-              >
-                {/* Glowing background effect */}
-                <div className="absolute inset-y-0 left-8 right-8"></div>
-                
-                <motion.button
-                  whileHover={{ 
-                    scale: 1.05,
-                    boxShadow: "0 0 12px rgba(69, 90, 120, 0.4)"
-                  }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={startGame}
-                  className="relative px-12 py-6 bg-primary/90 backdrop-blur-sm border border-border text-primary-foreground rounded-full font-bold text-xl transition-all duration-300 hover:bg-primary group"
-                >
-                  <div className="flex items-center space-x-3">
-                    <motion.div
-                      animate={{ rotate: [0, 360] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      className="w-6 h-6 border-2 border-primary-foreground/60 border-t-primary-foreground rounded-full"
-                    ></motion.div>
-                    <span>Start Typing Challenge</span>
-                    <motion.div
-                      animate={{ x: [0, 5, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                      className="text-2xl"
-                    >
-                      🚀
-                    </motion.div>
-                  </div>
-                  
-                  {/* Particle effects on hover */}
-                  <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-primary-foreground/60 rounded-full animate-ping"></div>
-                    <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-primary-foreground/40 rounded-full animate-pulse"></div>
-                    <div className="absolute bottom-1/3 left-1/4 w-1 h-1 bg-primary-foreground/40 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                  </div>
-                </motion.button>
-              </motion.div>
-            )}
-
-            {gameState.isGameActive && !isGameComplete && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="relative"
-              >
-                {/* Pulsing warning effect */}
-                <div className="absolute inset-y-0 left-8 right-8"></div>
-                
-                <motion.button
-                  whileHover={{ 
-                    scale: 1.05,
-                    boxShadow: "0 0 15px rgba(140, 69, 69, 0.4)"
-                  }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={stopGame}
-                  className="relative px-8 py-4 bg-destructive/90 backdrop-blur-sm border border-border text-primary-foreground rounded-full font-bold text-lg transition-all duration-300 hover:bg-destructive group"
-                >
-                  <div className="flex items-center space-x-3">
-                    <motion.div
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 1, repeat: Infinity }}
-                      className="text-xl"
-                    >
-                      ⏹️
-                    </motion.div>
-                    <span>End Session</span>
-                    <motion.div
-                      animate={{ rotate: [0, 10, -10, 0] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="text-lg"
-                    >
-                      ⚠️
-                    </motion.div>
-                  </div>
-                  
-                  {/* Warning pulse effect */}
-                  <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-destructive/60 rounded-full animate-ping"></div>
-                  </div>
-                </motion.button>
-              </motion.div>
-            )}
-
-            {isGameComplete && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="relative"
-              >
-                {/* Celebration background effect */}
-                <div className="absolute inset-y-0 left-8 right-8"></div>
-                
-                <motion.button
-                  whileHover={{ 
-                    scale: 1.05,
-                    boxShadow: "0 0 15px rgba(69, 90, 120, 0.4)"
-                  }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={startGame}
-                  className="relative px-12 py-6 bg-primary/90 backdrop-blur-sm border border-border text-primary-foreground rounded-full font-bold text-xl transition-all duration-300 hover:bg-primary group"
-                >
-                  <div className="flex items-center space-x-3">
-                    <motion.div
-                      animate={{ 
-                        rotate: [0, 360],
-                        scale: [1, 1.1, 1]
-                      }}
-                      transition={{ 
-                        rotate: { duration: 2, repeat: Infinity, ease: "linear" },
-                        scale: { duration: 1, repeat: Infinity }
-                      }}
-                      className="text-2xl"
-                    >
-                      🎯
-                    </motion.div>
-                    <span>Play Again with New Words</span>
-                    <motion.div
-                      animate={{ y: [0, -5, 0] }}
-                      transition={{ duration: 1, repeat: Infinity }}
-                      className="text-2xl"
-                    >
-                      🚀
-                    </motion.div>
-                  </div>
-                  
-                  {/* Celebration particles */}
-                  <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <motion.div 
-                      animate={{ 
-                        y: [0, -20, 0],
-                        opacity: [0, 1, 0]
-                      }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="absolute top-1/4 left-1/4 text-accent-foreground text-lg"
-                    >
-                      ✨
-                    </motion.div>
-                    <motion.div 
-                      animate={{ 
-                        y: [0, -15, 0],
-                        opacity: [0, 1, 0]
-                      }}
-                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                      className="absolute top-1/3 right-1/4 text-accent-foreground text-lg"
-                    >
-                      💫
-                    </motion.div>
-                  </div>
-                </motion.button>
-              </motion.div>
-            )}
-          </div>
         </motion.div>
+      </div>
+
+      {/* Fixed Game Controls - Always at bottom with responsive sizing */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 pb-4 sm:pb-6 md:pb-8 pointer-events-none">
+        <div className="flex justify-center px-4 sm:px-6 md:px-8">
+          {!gameState.isGameActive && !isGameComplete && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative pointer-events-auto"
+            >
+              {/* Glowing background effect */}
+              <div className="absolute inset-y-0 left-8 right-8"></div>
+              
+              <motion.button
+                whileHover={{ 
+                  scale: 1.05,
+                  boxShadow: "0 0 12px rgba(69, 90, 120, 0.4)"
+                }}
+                whileTap={{ scale: 0.95 }}
+                onClick={startGame}
+                className="relative px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-6 bg-primary/90 backdrop-blur-sm border border-border text-primary-foreground rounded-full font-bold text-sm sm:text-lg md:text-xl transition-all duration-300 hover:bg-primary group"
+              >
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 border-2 border-primary-foreground/60 border-t-primary-foreground rounded-full"
+                  ></motion.div>
+                  <span className="whitespace-nowrap">Start Typing Challenge</span>
+                  <motion.div
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="text-lg sm:text-xl md:text-2xl"
+                  >
+                    🚀
+                  </motion.div>
+                </div>
+                
+                {/* Particle effects on hover */}
+                <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-primary-foreground/60 rounded-full animate-ping"></div>
+                  <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-primary-foreground/40 rounded-full animate-pulse"></div>
+                  <div className="absolute bottom-1/3 left-1/4 w-1 h-1 bg-primary-foreground/40 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                </div>
+              </motion.button>
+            </motion.div>
+          )}
+
+          {gameState.isGameActive && !isGameComplete && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative pointer-events-auto"
+            >
+              {/* Pulsing warning effect */}
+              <div className="absolute inset-y-0 left-8 right-8"></div>
+              
+              <motion.button
+                whileHover={{ 
+                  scale: 1.05,
+                  boxShadow: "0 0 15px rgba(140, 69, 69, 0.4)"
+                }}
+                whileTap={{ scale: 0.95 }}
+                onClick={stopGame}
+                className="relative px-4 sm:px-6 md:px-8 py-3 sm:py-4 bg-destructive/90 backdrop-blur-sm border border-border text-primary-foreground rounded-full font-bold text-sm sm:text-base md:text-lg transition-all duration-300 hover:bg-destructive group"
+              >
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                    className="text-lg sm:text-xl"
+                  >
+                    ⏹️
+                  </motion.div>
+                  <span className="whitespace-nowrap">End Session</span>
+                  <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="text-base sm:text-lg"
+                  >
+                    ⚠️
+                  </motion.div>
+                </div>
+                
+                {/* Warning pulse effect */}
+                <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-destructive/60 rounded-full animate-ping"></div>
+                </div>
+              </motion.button>
+            </motion.div>
+          )}
+
+          {isGameComplete && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative pointer-events-auto"
+            >
+              {/* Celebration background effect */}
+              <div className="absolute inset-y-0 left-8 right-8"></div>
+              
+              <motion.button
+                whileHover={{ 
+                  scale: 1.05,
+                  boxShadow: "0 0 15px rgba(69, 90, 120, 0.4)"
+                }}
+                whileTap={{ scale: 0.95 }}
+                onClick={startGame}
+                className="relative px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-6 bg-primary/90 backdrop-blur-sm border border-border text-primary-foreground rounded-full font-bold text-sm sm:text-lg md:text-xl transition-all duration-300 hover:bg-primary group"
+              >
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <motion.div
+                    animate={{ 
+                      rotate: [0, 360],
+                      scale: [1, 1.1, 1]
+                    }}
+                    transition={{ 
+                      rotate: { duration: 2, repeat: Infinity, ease: "linear" },
+                      scale: { duration: 1, repeat: Infinity }
+                    }}
+                    className="text-lg sm:text-xl md:text-2xl"
+                  >
+                    🎯
+                  </motion.div>
+                  <span className="whitespace-nowrap">Play Again with New Words</span>
+                  <motion.div
+                    animate={{ y: [0, -5, 0] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                    className="text-lg sm:text-xl md:text-2xl"
+                  >
+                    🚀
+                  </motion.div>
+                </div>
+                
+                {/* Celebration particles */}
+                <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <motion.div 
+                    animate={{ 
+                      y: [0, -20, 0],
+                      opacity: [0, 1, 0]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="absolute top-1/4 left-1/4 text-accent-foreground text-lg"
+                  >
+                    ✨
+                  </motion.div>
+                  <motion.div 
+                    animate={{ 
+                      y: [0, -15, 0],
+                      opacity: [0, 1, 0]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    className="absolute top-1/3 right-1/4 text-accent-foreground text-lg"
+                  >
+                    💫
+                  </motion.div>
+                </div>
+              </motion.button>
+            </motion.div>
+          )}
+        </div>
       </div>
     </div>
   );
