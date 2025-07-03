@@ -60,7 +60,7 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/30 backdrop-blur-lg flex items-center justify-center z-50"
+      className="fixed inset-0 bg-background/30 backdrop-blur-lg flex items-center justify-center z-50"
       onClick={onClose}
     >
       <motion.div
@@ -68,20 +68,20 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-secondary backdrop-blur-lg p-8 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
+        className="bg-card backdrop-blur-lg p-8 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto border border-border"
       >
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-bold text-foreground">
               🏆 Leaderboard
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Best scores per player
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             ✕
           </button>
@@ -89,19 +89,19 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
 
         {loading && (
           <div className="text-center py-8">
-            <div className="text-gray-600 dark:text-gray-400">Loading...</div>
+            <div className="text-muted-foreground">Loading...</div>
           </div>
         )}
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          <div className="mb-4 p-3 bg-destructive/10 border border-destructive text-destructive rounded">
             {error}
           </div>
         )}
 
         {!loading && !error && scores.length === 0 && (
           <div className="text-center py-8">
-            <div className="text-gray-600 dark:text-gray-400">
+            <div className="text-muted-foreground">
               No scores yet. Be the first to set a record!
             </div>
           </div>
@@ -117,24 +117,24 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
                 transition={{ delay: index * 0.1 }}
                 className={`flex items-center justify-between p-4 rounded-lg border ${
                   score.user_id === user?.id
-                    ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
-                    : 'bg-gray-50 border-gray-200 dark:bg-gray-700 dark:border-gray-600'
+                    ? 'bg-accent/20 border-accent'
+                    : 'bg-secondary border-border'
                 }`}
               >
                 <div className="flex items-center space-x-4">
                   <div className={`text-2xl font-bold ${
-                    index === 0 ? 'text-yellow-500' :
-                    index === 1 ? 'text-gray-400' :
-                    index === 2 ? 'text-amber-600' :
-                    'text-gray-600 dark:text-gray-400'
+                    index === 0 ? 'text-chart-2' :
+                    index === 1 ? 'text-chart-3' :
+                    index === 2 ? 'text-chart-4' :
+                    'text-muted-foreground'
                   }`}>
                     {index + 1}
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900 dark:text-white">
+                    <div className="font-medium text-foreground">
                       {score.profiles?.username || score.profiles?.email || 'Anonymous'}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-muted-foreground">
                       {new Date(score.created_at).toLocaleDateString()}
                     </div>
                   </div>
@@ -142,22 +142,22 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
                 
                 <div className="flex items-center space-x-6 text-sm">
                   <div className="text-center">
-                    <div className="font-bold text-lg text-blue-600 dark:text-blue-400">
+                    <div className="font-bold text-lg text-chart-1">
                       {score.wpm}
                     </div>
-                    <div className="text-gray-600 dark:text-gray-400">WPM</div>
+                    <div className="text-muted-foreground">WPM</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-bold text-lg text-green-600 dark:text-green-400">
+                    <div className="font-bold text-lg text-chart-2">
                       {score.accuracy}%
                     </div>
-                    <div className="text-gray-600 dark:text-gray-400">Accuracy</div>
+                    <div className="text-muted-foreground">Accuracy</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-bold text-lg text-purple-600 dark:text-purple-400">
+                    <div className="font-bold text-lg text-chart-3">
                       {score.words_typed}
                     </div>
-                    <div className="text-gray-600 dark:text-gray-400">Words</div>
+                    <div className="text-muted-foreground">Words</div>
                   </div>
                 </div>
               </motion.div>

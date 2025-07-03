@@ -40,27 +40,27 @@ export default function GameStats({ gameState }: GameStatsProps) {
     {
       label: 'Words',
       value: `${gameState.completedWords.filter(word => word.isCorrect).length}/${gameState.completedWords.length}`,
-      color: 'text-blue-700 dark:text-blue-400'
+      color: 'text-chart-1'
     },
     {
       label: 'WPM',
       value: calculateWPM(),
-      color: 'text-green-700 dark:text-green-400'
+      color: 'text-chart-2'
     },
     {
       label: 'Accuracy',
       value: `${calculateAccuracy()}%`,
-      color: 'text-yellow-700 dark:text-yellow-400'
+      color: 'text-chart-3'
     },
     {
       label: 'Time',
       value: `${getTimeRemaining()}s`,
-      color: 'text-purple-700 dark:text-purple-400'
+      color: 'text-chart-4'
     },
     {
       label: 'Errors',
       value: gameState.errors,
-      color: 'text-red-700 dark:text-red-400'
+      color: 'text-destructive'
     }
   ];
 
@@ -76,12 +76,12 @@ export default function GameStats({ gameState }: GameStatsProps) {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: index * 0.1 }}
-          className="text-center bg-background/30 backdrop-blur-sm px-4 py-3 rounded-lg border border-background/50"
+          className="text-center bg-card backdrop-blur-sm px-4 py-3 rounded-lg border border-border"
         >
           <div className={`text-2xl font-bold ${stat.color}`}>
             {stat.value}
           </div>
-          <div className="text-foreground/80 text-sm uppercase tracking-wider">
+          <div className="text-muted-foreground text-sm uppercase tracking-wider">
             {stat.label}
           </div>
         </motion.div>

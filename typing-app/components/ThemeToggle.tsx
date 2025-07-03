@@ -15,7 +15,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-800 animate-pulse" />
+      <div className="w-10 h-10 rounded-lg bg-secondary animate-pulse" />
     );
   }
 
@@ -24,7 +24,7 @@ export function ThemeToggle() {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="relative p-2 rounded-lg bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200"
+      className="relative p-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors duration-200"
       aria-label="Toggle theme"
     >
       <motion.div
@@ -36,7 +36,7 @@ export function ThemeToggle() {
         transition={{ duration: 0.2 }}
         className="absolute inset-2"
       >
-        <Moon className="w-full h-full text-gray-800 dark:text-gray-200" />
+        <Moon className="w-full h-full text-foreground" />
       </motion.div>
       
       <motion.div
@@ -48,7 +48,7 @@ export function ThemeToggle() {
         transition={{ duration: 0.2 }}
         className="absolute inset-2"
       >
-        <Sun className="w-full h-full text-gray-800 dark:text-gray-200" />
+        <Sun className="w-full h-full text-foreground" />
       </motion.div>
       
       {/* Invisible placeholder to maintain button size */}

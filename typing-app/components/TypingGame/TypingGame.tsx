@@ -438,17 +438,17 @@ export default function TypingGame() {
                 <motion.button
                   whileHover={{ 
                     scale: 1.05,
-                    boxShadow: "0 0 12px rgba(59, 130, 246, 0.4)"
+                    boxShadow: "0 0 12px rgba(69, 90, 120, 0.4)"
                   }}
                   whileTap={{ scale: 0.95 }}
                   onClick={startGame}
-                  className="relative px-12 py-6 bg-gradient-to-r from-green-800/80 to-green-200/80 backdrop-blur-sm border border-white/30 text-white rounded-full font-bold text-xl transition-all duration-300 hover:from-green-500/90 hover:to-green-200/90 group"
+                  className="relative px-12 py-6 bg-primary/90 backdrop-blur-sm border border-border text-primary-foreground rounded-full font-bold text-xl transition-all duration-300 hover:bg-primary group"
                 >
                   <div className="flex items-center space-x-3">
                     <motion.div
                       animate={{ rotate: [0, 360] }}
                       transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      className="w-6 h-6 border-2 border-white/60 border-t-white rounded-full"
+                      className="w-6 h-6 border-2 border-primary-foreground/60 border-t-primary-foreground rounded-full"
                     ></motion.div>
                     <span>Start Typing Challenge</span>
                     <motion.div
@@ -462,9 +462,9 @@ export default function TypingGame() {
                   
                   {/* Particle effects on hover */}
                   <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-white/60 rounded-full animate-ping"></div>
-                    <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-white/40 rounded-full animate-pulse"></div>
-                    <div className="absolute bottom-1/3 left-1/4 w-1 h-1 bg-white/40 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                    <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-primary-foreground/60 rounded-full animate-ping"></div>
+                    <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-primary-foreground/40 rounded-full animate-pulse"></div>
+                    <div className="absolute bottom-1/3 left-1/4 w-1 h-1 bg-primary-foreground/40 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
                   </div>
                 </motion.button>
               </motion.div>
@@ -482,11 +482,11 @@ export default function TypingGame() {
                 <motion.button
                   whileHover={{ 
                     scale: 1.05,
-                    boxShadow: "0 0 15px rgba(239, 68, 68, 0.4)"
+                    boxShadow: "0 0 15px rgba(140, 69, 69, 0.4)"
                   }}
                   whileTap={{ scale: 0.95 }}
                   onClick={stopGame}
-                  className="relative px-8 py-4 bg-gradient-to-r from-red-600/80 to-orange-600/80 backdrop-blur-sm border border-white/30 text-white rounded-full font-bold text-lg transition-all duration-300 hover:from-red-500/90 hover:to-orange-500/90 group"
+                  className="relative px-8 py-4 bg-destructive/90 backdrop-blur-sm border border-border text-primary-foreground rounded-full font-bold text-lg transition-all duration-300 hover:bg-destructive group"
                 >
                   <div className="flex items-center space-x-3">
                     <motion.div
@@ -508,7 +508,7 @@ export default function TypingGame() {
                   
                   {/* Warning pulse effect */}
                   <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-red-400/60 rounded-full animate-ping"></div>
+                    <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-destructive/60 rounded-full animate-ping"></div>
                   </div>
                 </motion.button>
               </motion.div>
@@ -526,11 +526,11 @@ export default function TypingGame() {
                 <motion.button
                   whileHover={{ 
                     scale: 1.05,
-                    boxShadow: "0 0 15px rgba(34, 197, 94, 0.4)"
+                    boxShadow: "0 0 15px rgba(69, 90, 120, 0.4)"
                   }}
                   whileTap={{ scale: 0.95 }}
                   onClick={startGame}
-                  className="relative px-12 py-6 bg-gradient-to-r from-green-600/80 to-emerald-600/80 backdrop-blur-sm border border-white/30 text-white rounded-full font-bold text-xl transition-all duration-300 hover:from-green-500/90 hover:to-emerald-500/90 group"
+                  className="relative px-12 py-6 bg-primary/90 backdrop-blur-sm border border-border text-primary-foreground rounded-full font-bold text-xl transition-all duration-300 hover:bg-primary group"
                 >
                   <div className="flex items-center space-x-3">
                     <motion.div
@@ -564,7 +564,7 @@ export default function TypingGame() {
                         opacity: [0, 1, 0]
                       }}
                       transition={{ duration: 2, repeat: Infinity }}
-                      className="absolute top-1/4 left-1/4 text-yellow-300 text-lg"
+                      className="absolute top-1/4 left-1/4 text-accent-foreground text-lg"
                     >
                       ✨
                     </motion.div>
@@ -574,7 +574,7 @@ export default function TypingGame() {
                         opacity: [0, 1, 0]
                       }}
                       transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                      className="absolute top-1/3 right-1/4 text-pink-300 text-lg"
+                      className="absolute top-1/3 right-1/4 text-accent-foreground text-lg"
                     >
                       💫
                     </motion.div>

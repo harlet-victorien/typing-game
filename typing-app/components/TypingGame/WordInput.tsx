@@ -124,7 +124,7 @@ export default function WordInput({
       
       {/* Progress and instructions */}
       <div className="flex flex-col items-center space-y-2">
-        <div className="text-gray-600 dark:text-gray-400 text-sm">
+        <div className="text-muted-foreground text-sm">
           Progress: {value.length}/{targetWord.length}
         </div>
       

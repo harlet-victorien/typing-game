@@ -68,12 +68,12 @@ export default function CompletedWords({ words }: CompletedWordsProps) {
               className={`
                 font-mono text-right transition-all duration-500
                 ${completedWord.isCorrect 
-                  ? isLatest ? 'text-2xl text-green-600 dark:text-green-400 font-bold' : 
-                    index === visibleWords.length - 2 ? 'text-xl text-green-500 dark:text-green-300' : 
-                    'text-lg text-green-400 dark:text-green-200'
-                  : isLatest ? 'text-2xl text-red-600 dark:text-red-400 font-bold' :
-                    index === visibleWords.length - 2 ? 'text-xl text-red-500 dark:text-red-300' :
-                    'text-lg text-red-400 dark:text-red-200'
+                  ? isLatest ? 'text-2xl text-primary font-bold' : 
+                    index === visibleWords.length - 2 ? 'text-xl text-primary/80' : 
+                    'text-lg text-primary/60'
+                  : isLatest ? 'text-2xl text-destructive font-bold' :
+                    index === visibleWords.length - 2 ? 'text-xl text-destructive/80' :
+                    'text-lg text-destructive/60'
                 }
               `}
               style={{
@@ -102,7 +102,7 @@ export default function CompletedWords({ words }: CompletedWordsProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.5 }}
-          className="text-foreground font-mono text-lg"
+          className="text-muted-foreground font-mono text-lg"
         >
           Completed words appear here...
         </motion.div>

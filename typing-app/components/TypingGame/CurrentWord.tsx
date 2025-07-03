@@ -34,9 +34,9 @@ export default function CurrentWord({ word, currentInput, isActive, upcomingWord
               key={`${word}-${index}`}
               className={`
                 relative transition-all duration-200
-                ${status === 'correct' ? 'text-green-600 dark:text-green-400' : ''}
-                ${status === 'incorrect' ? 'text-red-600 dark:text-red-400 bg-red-500/20' : ''}
-                ${status === 'current' ? 'text-yellow-600 dark:text-yellow-400' : ''}
+                ${status === 'correct' ? 'text-chart-2' : ''}
+                ${status === 'incorrect' ? 'text-destructive bg-destructive/10' : ''}
+                ${status === 'current' ? 'text-chart-4' : ''}
                 ${status === 'upcoming' ? 'text-foreground' : ''}
               `}
               animate={{
@@ -47,7 +47,7 @@ export default function CurrentWord({ word, currentInput, isActive, upcomingWord
               {letter}
               {status === 'current' && (
                 <motion.div
-                  className="absolute -bottom-2 left-0 right-0 h-1 bg-yellow-600 dark:bg-yellow-400"
+                  className="absolute -bottom-2 left-0 right-0 h-1 bg-chart-4"
                   animate={{ opacity: [1, 0, 1] }}
                   transition={{ duration: 1, repeat: Infinity }}
                 />
