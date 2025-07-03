@@ -11,7 +11,6 @@ import { useAuth } from '../auth/AuthProvider';
 import AuthModal from '../auth/AuthModal';
 import UserProfile from '../auth/UserProfile';
 import Leaderboard from '../Leaderboard';
-import Aurora from '../Aurora';
 import { Button } from '../ui/button';
 
 // Default fallback words in case API fails
@@ -312,16 +311,8 @@ export default function TypingGame() {
   }, [gameState.timeRemaining, gameState.isGameActive, gameState, user, saveScore, scoreSaved]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 transition-colors duration-200 relative overflow-hidden">
-      {/* Aurora Background */}
-      <div className="absolute inset-0 z-0">
-        <Aurora
-          colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
-          blend={0.5}
-          amplitude={1.0}
-          speed={0.5}
-        />
-      </div>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 transition-colors duration-200 relative overflow-hidden">
+
       
       {/* Content */}
       <div className="relative z-10 w-full max-w-6xl">
