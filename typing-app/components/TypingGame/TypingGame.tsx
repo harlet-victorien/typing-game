@@ -407,7 +407,7 @@ export default function TypingGame() {
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="text-4xl font-bold text-white bg-black/20 backdrop-blur-sm px-8 py-4 rounded-lg border border-white/20"
+                className="text-4xl font-bold text-foreground bg-secondary backdrop-blur-lg px-8 py-4 rounded-lg"
               >
                 ⏰ Time&apos;s Up!
               </motion.div>

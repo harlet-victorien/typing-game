@@ -60,7 +60,7 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/30 backdrop-blur-lg flex items-center justify-center z-50"
       onClick={onClose}
     >
       <motion.div
@@ -68,11 +68,11 @@ export default function Leaderboard({ isOpen, onClose }: LeaderboardProps) {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-background/30 backdrop-blur-sm p-8 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
+        className="bg-secondary backdrop-blur-lg p-8 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
       >
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-foreground">
               🏆 Leaderboard
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">

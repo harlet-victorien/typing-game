@@ -87,21 +87,6 @@ export default function GameStats({ gameState, isGameComplete }: GameStatsProps)
         </motion.div>
       ))}
       
-      {isGameComplete && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center ml-8 pl-8 border-l border-white/30 bg-black/20 backdrop-blur-sm px-4 py-3 rounded-lg border border-white/20"
-        >
-          <div className="text-2xl font-bold text-white">
-            🏆
-          </div>
-          <div className="text-white/80 text-sm uppercase tracking-wider">
-            Complete
-          </div>
-        </motion.div>
-      )}
     </motion.div>
   );
 } 
