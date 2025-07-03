@@ -8,7 +8,7 @@ interface GameStatsProps {
   isGameComplete: boolean;
 }
 
-export default function GameStats({ gameState, isGameComplete }: GameStatsProps) {
+export default function GameStats({ gameState }: GameStatsProps) {
   const calculateWPM = () => {
     if (!gameState.isGameActive && gameState.timeRemaining === 60) return 0; // Game hasn't started
     
