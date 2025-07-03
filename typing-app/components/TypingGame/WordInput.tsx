@@ -121,14 +121,6 @@ export default function WordInput({
         spellCheck="false"
         aria-label="Typing input"
       />
-      
-      {/* Progress and instructions */}
-      <div className="flex flex-col items-center space-y-2">
-        <div className="text-muted-foreground text-sm">
-          Progress: {value.length}/{targetWord.length}
-        </div>
-      
-      </div>
     </div>
   );
 } 
