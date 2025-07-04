@@ -469,7 +469,7 @@ export default function TypingGame() {
         >
          <div className="flex flex-col items-center justify-center h-[calc(40vh-4rem)] relative mt-12">
               <div className="w-full h-full">
-                <Card className="w-full h-full border-none bg-transparent backdrop-blur-none">
+                <Card className="w-full h-full border-none bg-transparent shadow-none backdrop-blur-none">
                   <ChartLineDefault data={chartData} />
                   <CardFooter className="flex justify-center space-x-12">
                     <p className="text-sm text-muted-foreground">WPM : {(() => {
