@@ -32,7 +32,7 @@ export default function CompletedWords({ words }: CompletedWordsProps) {
   }, [words.length]);
 
   return (
-    <div className="flex flex-col items-end space-y-2 min-w-[200px]">
+    <div className="flex flex-col-reverse items-end space-y-2 space-y-reverse min-w-[200px]">
       <AnimatePresence mode="popLayout">
         {visibleWords.map((completedWord, index) => {
           const isLatest = index === visibleWords.length - 1;

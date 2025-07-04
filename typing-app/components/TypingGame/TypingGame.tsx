@@ -13,6 +13,8 @@ import Leaderboard from '../Leaderboard';
 import ThemeSelector from '../ThemeSelector';
 import { Button } from '../ui/button';
 import { ChartLineDefault } from '../LineChart';
+import { Card } from '../ui/card';
+import { CardFooter } from '@/components/ui/card';
 
 // Default fallback words in case API fails
 const FALLBACK_WORDS = [
@@ -465,9 +467,24 @@ export default function TypingGame() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full"
         >
-         <div className="flex flex-col items-center justify-center h-[calc(40vh-4rem)] relative mt-12 p-4">
+         <div className="flex flex-col items-center justify-center h-[calc(40vh-4rem)] relative mt-12">
               <div className="w-full h-full">
-                <ChartLineDefault data={chartData} />
+                <Card className="w-full h-full border-none bg-transparent backdrop-blur-none">
+                  <ChartLineDefault data={chartData} />
+                  <CardFooter className="flex justify-center space-x-12">
+                    <p className="text-sm text-muted-foreground">WPM : {(() => {
+                      const timeElapsed = (60 - gameState.timeRemaining) / 60;
+                      const correctWords = gameState.completedWords.filter(word => word.isCorrect).length;
+                      return timeElapsed > 0 ? Math.round(correctWords / timeElapsed) : 0;
+                    })()}</p>
+                    <p className="text-sm text-muted-foreground">Accuracy : {(() => {
+                      return gameState.totalKeystrokes > 0 
+                        ? Math.round(((gameState.totalKeystrokes - gameState.errors) / gameState.totalKeystrokes) * 100)
+                        : 100;
+                    })()}%</p>
+                    <p className="text-sm text-muted-foreground">Errors : {gameState.errors} / {gameState.totalKeystrokes}</p>
+                  </CardFooter> 
+                </Card>
               </div>
              </div>
 
@@ -483,10 +500,10 @@ export default function TypingGame() {
           )}
 
           {/* Main typing area - centered with completed words on the left */}
-          <div className="flex items-center justify-center min-h-[calc(60vh-4rem)] relative my-0">
+          <div className="flex justify-center min-h-[calc(60vh-4rem)] relative my-0">
             {/* Completed words - positioned on the left */}
             {!isGameComplete && (
-              <div className="absolute left-4 top-1/2 transform -translate-y-1/2 hidden lg:block">
+              <div className="absolute left-4 pt-32 hidden lg:block">
                 <CompletedWords words={gameState.completedWords} />
               </div>
             )}
@@ -503,13 +520,13 @@ export default function TypingGame() {
             
             {/* Game complete message - centered */}
             {isGameComplete && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="text-4xl font-bold text-foreground bg-secondary backdrop-blur-lg px-8 py-4 rounded-lg"
+              <div className="flex mt-32 justify-center">
+              <Card
+                className="text-4xl font-bold text-foreground bg-secondary backdrop-blur-lg p-4 rounded-lg h-16 items-center justify-center"
               >
                 ⏰ Time&apos;s Up!
-              </motion.div>
+              </Card>
+              </div>
             )}
           </div>
 

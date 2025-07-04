@@ -16,7 +16,7 @@ export default function CurrentWord({ word, currentInput, isActive, upcomingWord
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.8 }}
-      className="flex flex-col justify-center items-center space-y-6"
+      className="flex flex-col pt-20 items-center space-y-6"
     >
       {/* Current Word - Largest */}
       <div className="text-6xl font-mono font-bold tracking-wider">
