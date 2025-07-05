@@ -6,11 +6,9 @@
 
 ## core features
 
-- realtime wpm graph
+- ✅ realtime wpm graph
 - ✅ leaderboard (implemented with Supabase)
-- text generation
 - ✅ DB (Supabase database with user authentication)
-- progress time bar
 
 ## more features
 
@@ -18,6 +16,7 @@
 - keyboard strokes sounds (different switches sounds)
 - user stats graphs
 - music texts
+- cozy buttons and theme
   
   
 

@@ -52,6 +52,19 @@ interface WordsResponse {
   timestamp: string;
 }
 
+// Helper function to get theme display name
+const getThemeName = (themeId: string): string => {
+  const themeMap: Record<string, string> = {
+    'default': 'Default',
+    'programming': 'Programming',
+    'animals': 'Animals',
+    'python': 'Python',
+    'nextjs': 'Next.js',
+    'french': 'Français'
+  };
+  return themeMap[themeId] || themeId;
+};
+
 export default function TypingGame() {
   const { user } = useAuth();
   const [gameState, setGameState] = useState<GameState>({
@@ -90,7 +103,10 @@ export default function TypingGame() {
   // Calculate upcoming words for preview
   const upcomingWords = [
     wordList[(gameState.currentWordIndex + 1) % wordList.length],
-    wordList[(gameState.currentWordIndex + 2) % wordList.length]
+    wordList[(gameState.currentWordIndex + 2) % wordList.length],
+    wordList[(gameState.currentWordIndex + 3) % wordList.length],
+    wordList[(gameState.currentWordIndex + 4) % wordList.length],
+    wordList[(gameState.currentWordIndex + 5) % wordList.length]
   ];
 
   // Fetch fresh words from API
@@ -472,6 +488,7 @@ export default function TypingGame() {
                 <Card className="w-full h-full border-none bg-transparent shadow-none backdrop-blur-none">
                   <ChartLineDefault data={chartData} />
                   <CardFooter className="flex justify-center space-x-12">
+                    <p className="text-sm text-muted-foreground">Theme : {getThemeName(selectedTheme)}</p>
                     <p className="text-sm text-muted-foreground">WPM : {(() => {
                       const timeElapsed = (60 - gameState.timeRemaining) / 60;
                       const correctWords = gameState.completedWords.filter(word => word.isCorrect).length;
@@ -500,7 +517,7 @@ export default function TypingGame() {
           )}
 
           {/* Main typing area - centered with completed words on the left */}
-          <div className="flex justify-center min-h-[calc(60vh-4rem)] relative my-0">
+          <div className="flex justify-center min-h-[calc(60vh-4rem)] relative my-0 overflow-hidden">
             {/* Completed words - positioned on the left */}
             {!isGameComplete && (
               <div className="absolute left-4 pt-32 hidden lg:block">

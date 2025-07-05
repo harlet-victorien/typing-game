@@ -16,7 +16,7 @@ export default function CurrentWord({ word, currentInput, isActive, upcomingWord
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.8 }}
-      className="flex flex-col pt-20 items-center space-y-6"
+      className="flex flex-col pt-20 items-center space-y-4 overflow-hidden max-h-[calc(60vh-4rem)]"
     >
       {/* Current Word - Largest */}
       <div className="text-6xl font-mono font-bold tracking-wider">
@@ -60,7 +60,7 @@ export default function CurrentWord({ word, currentInput, isActive, upcomingWord
       {/* Next Word - Medium Size */}
       {upcomingWords[0] && (
         <motion.div 
-          className="text-4xl font-mono font-medium tracking-wide text-foreground opacity-60"
+          className="text-5xl font-mono font-medium tracking-wide text-foreground opacity-60"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 0.6, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -72,12 +72,48 @@ export default function CurrentWord({ word, currentInput, isActive, upcomingWord
       {/* Second Next Word - Small Size */}
       {upcomingWords[1] && (
         <motion.div 
-          className="text-2xl font-mono tracking-wide text-foreground opacity-40"
+          className="text-4xl font-mono tracking-wide text-foreground opacity-40"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 0.4, y: 0 }}
           transition={{ delay: 0.2 }}
         >
           {upcomingWords[1]}
+        </motion.div>
+      )}
+
+      {/* Third Next Word - Smaller Size */}
+      {upcomingWords[2] && (
+        <motion.div 
+          className="text-3xl font-mono tracking-wide text-foreground opacity-30"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 0.3, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          {upcomingWords[2]}
+        </motion.div>
+      )}
+
+      {/* Fourth Next Word - Even Smaller Size */}
+      {upcomingWords[3] && (
+        <motion.div 
+          className="text-2xl font-mono tracking-wide text-foreground opacity-25"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 0.25, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          {upcomingWords[3]}
+        </motion.div>
+      )}
+
+      {/* Fifth Next Word - Smallest Size */}
+      {upcomingWords[4] && (
+        <motion.div 
+          className="text-xl font-mono tracking-wide text-foreground opacity-20"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 0.2, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          {upcomingWords[4]}
         </motion.div>
       )}
     </motion.div>
