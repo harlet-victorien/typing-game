@@ -64,7 +64,11 @@ const getThemeName = (themeId: string): string => {
   return themeMap[themeId] || themeId;
 };
 
-export default function TypingGame() {
+interface TypingGameProps {
+  onShowProfile?: () => void;
+}
+
+export default function TypingGame({ onShowProfile }: TypingGameProps) {
   const { user } = useAuth();
   const [gameState, setGameState] = useState<GameState>({
     currentWordIndex: 0,
@@ -409,7 +413,7 @@ export default function TypingGame() {
           
           <div className="flex items-center space-x-4">
             {user ? (
-              <UserProfile />
+              <UserProfile onShowProfile={onShowProfile} />
             ) : (
               <Button
                 onClick={() => setShowAuthModal(true)}
@@ -510,7 +514,7 @@ export default function TypingGame() {
           )}
 
           {/* Main typing area - paragraph view */}
-          <div className="flex justify-center min-h-[calc(60vh-4rem)] relative my-0 overflow-hidden">
+          <div className="flex justify-center min-h-[calc(60vh)] relative mt-8 overflow-hidden">
             {/* Line-based word display */}
             <CurrentWord 
               wordList={wordList}

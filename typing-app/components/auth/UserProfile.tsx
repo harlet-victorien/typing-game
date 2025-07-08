@@ -5,7 +5,11 @@ import { motion } from 'framer-motion';
 import { useAuth } from './AuthProvider';
 import { Button } from '../ui/button';
 
-export default function UserProfile() {
+interface UserProfileProps {
+  onShowProfile?: () => void;
+}
+
+export default function UserProfile({ onShowProfile }: UserProfileProps) {
   const { user, signOut } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -49,7 +53,19 @@ export default function UserProfile() {
               {user.email}
             </p>
           </div>
-          <div className="p-2">
+          <div className="p-2 space-y-1">
+            {onShowProfile && (
+              <Button
+                onClick={() => {
+                  onShowProfile();
+                  setIsDropdownOpen(false);
+                }}
+                variant="secondary"
+                className="w-full justify-start"
+              >
+                👤 View Profile
+              </Button>
+            )}
             <Button
               onClick={handleSignOut}
               variant="secondary"
