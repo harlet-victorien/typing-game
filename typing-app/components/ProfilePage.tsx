@@ -208,7 +208,7 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
               </div>
 
               {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -218,6 +218,18 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
                   <CardContent>
                     <div className="text-3xl font-bold text-chart-2">{stats.wpmMean}</div>
                     <p className="text-sm text-muted-foreground">Average typing speed</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Max WPM
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-chart-3">{stats.bestWpm}</div>
+                    <p className="text-sm text-muted-foreground">Best typing speed</p>
                   </CardContent>
                 </Card>
 
