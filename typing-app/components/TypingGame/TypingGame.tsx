@@ -195,7 +195,8 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
         accuracy,
         words_typed: correctWords,
         errors: finalGameState.errors,
-        time_duration: 60 - finalGameState.timeRemaining // Actual time played
+        time_duration: 60 - finalGameState.timeRemaining, // Actual time played
+        theme: selectedTheme
       };
       
       console.log('POST /api/scores with data:', scoreData);

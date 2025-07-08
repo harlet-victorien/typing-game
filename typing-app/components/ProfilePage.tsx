@@ -13,20 +13,27 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ChartPieLegend, createChartConfig, createChartData } from './PieChart';
 
 interface ProfileStats {
+  wpmMean: number;
+  errorsMean: number;
+  accuracyMean: number;
   totalGames: number;
-  averageWpm: number;
   bestWpm: number;
-  averageAccuracy: number;
-  totalWordsTyped: number;
-  totalErrors: number;
 }
 
-interface RecentScore {
+interface ScoreRecord {
+  date: string;
+  theme: string;
   wpm: number;
   accuracy: number;
-  created_at: string;
-  words_typed: number;
   errors: number;
+  words: number;
+  duration: number;
+}
+
+interface ThemeStats {
+  theme: string;
+  count: number;
+  averageWpm: number;
 }
 
 interface ProfilePageProps {
@@ -39,20 +46,21 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showThemeSelector, setShowThemeSelector] = useState(false);
   const [stats, setStats] = useState<ProfileStats>({
+    wpmMean: 0,
+    errorsMean: 0,
+    accuracyMean: 0,
     totalGames: 0,
-    averageWpm: 0,
-    bestWpm: 0,
-    averageAccuracy: 0,
-    totalWordsTyped: 0,
-    totalErrors: 0
+    bestWpm: 0
   });
-  const [recentScores, setRecentScores] = useState<RecentScore[]>([]);
+  const [scoreHistory, setScoreHistory] = useState<ScoreRecord[]>([]);
+  const [themeStats, setThemeStats] = useState<ThemeStats[]>([]);
 
-  // Fetch user stats and recent scores
+  // Fetch user stats and score history
   useEffect(() => {
     if (user) {
       fetchUserStats();
-      fetchRecentScores();
+      fetchScoreHistory();
+      fetchThemeStats();
     }
   }, [user]);
 
@@ -68,28 +76,45 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
     }
   };
 
-  const fetchRecentScores = async () => {
+  const fetchScoreHistory = async () => {
     try {
-      const response = await fetch(`/api/scores?user_id=${user?.id}&limit=10`);
+      const response = await fetch(`/api/scores?user_id=${user?.id}&limit=50`);
       if (response.ok) {
         const data = await response.json();
-        setRecentScores(data.scores || []);
+        setScoreHistory(data.scoreHistory || []);
       }
     } catch (error) {
-      console.error('Error fetching recent scores:', error);
+      console.error('Error fetching score history:', error);
     }
   };
 
-  // Create chart data for accuracy pie chart
-  const accuracyChartData = createChartData([
-    { status: 'correct', words: stats.totalWordsTyped - stats.totalErrors },
-    { status: 'incorrect', words: stats.totalErrors }
-  ]);
+  const fetchThemeStats = async () => {
+    try {
+      const response = await fetch(`/api/scores?user_id=${user?.id}&themes=true`);
+      if (response.ok) {
+        const data = await response.json();
+        setThemeStats(data.themeStats || []);
+      }
+    } catch (error) {
+      console.error('Error fetching theme stats:', error);
+    }
+  };
 
-  const accuracyChartConfig = createChartConfig([
-    { key: 'correct', label: 'Correct Words', color: 'var(--chart-2)' },
-    { key: 'incorrect', label: 'Incorrect Words', color: 'var(--chart-1)' }
-  ]);
+  // Create chart data for theme distribution pie chart
+  const themeChartData = createChartData(
+    themeStats.map(theme => ({
+      theme: theme.theme,
+      games: theme.count
+    }))
+  );
+
+  const themeChartConfig = createChartConfig(
+    themeStats.map((theme, index) => ({
+      key: theme.theme,
+      label: theme.theme.charAt(0).toUpperCase() + theme.theme.slice(1),
+      color: `var(--chart-${(index % 5) + 1})`
+    }))
+  );
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 transition-colors duration-200 relative overflow-hidden">
@@ -183,100 +208,109 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
                  </p>
               </div>
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Total Games
+                      WPM Mean
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalGames}</div>
+                    <div className="text-3xl font-bold text-chart-2">{stats.wpmMean}</div>
+                    <p className="text-sm text-muted-foreground">Average typing speed</p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Average WPM
+                      Errors Mean
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats.averageWpm}</div>
+                    <div className="text-3xl font-bold text-chart-1">{stats.errorsMean}</div>
+                    <p className="text-sm text-muted-foreground">Average errors per game</p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Best WPM
+                      Accuracy Mean
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-chart-2">{stats.bestWpm}</div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Average Accuracy
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.averageAccuracy}%</div>
+                    <div className="text-3xl font-bold text-chart-4">{stats.accuracyMean}%</div>
+                    <p className="text-sm text-muted-foreground">Average accuracy rate</p>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Charts and Recent Games */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Accuracy Chart */}
-                {stats.totalWordsTyped > 0 && (
+              {/* Theme Distribution Chart */}
+              {themeStats.length > 0 && (
+                <div className="mb-8">
                   <ChartPieLegend
-                    title="Overall Accuracy"
-                    description="Words typed correctly vs incorrectly"
-                    data={accuracyChartData}
-                    config={accuracyChartConfig}
-                    dataKey="words"
-                    nameKey="status"
+                    title="Scores per Theme"
+                    description="Distribution of games across different themes"
+                    data={themeChartData}
+                    config={themeChartConfig}
+                    dataKey="games"
+                    nameKey="theme"
                   />
-                )}
+                </div>
+              )}
 
-                {/* Recent Games */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recent Games</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {recentScores.length > 0 ? (
-                        recentScores.slice(0, 5).map((score, index) => (
-                          <div
-                            key={index}
-                            className="flex justify-between items-center p-3 bg-muted/50 rounded-lg"
-                          >
-                            <div>
-                              <div className="font-medium">{score.wpm} WPM</div>
-                              <div className="text-sm text-muted-foreground">
-                                {score.accuracy}% accuracy
-                              </div>
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {new Date(score.created_at).toLocaleDateString()}
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center text-muted-foreground py-8">
-                          No games played yet. Start typing to see your progress!
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              {/* Score History Table */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Score History</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-2">Date</th>
+                          <th className="text-left py-2">Theme</th>
+                          <th className="text-left py-2">WPM</th>
+                          <th className="text-left py-2">Accuracy</th>
+                          <th className="text-left py-2">Errors</th>
+                          <th className="text-left py-2">Words</th>
+                          <th className="text-left py-2">Duration</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {scoreHistory.length > 0 ? (
+                          scoreHistory.map((score, index) => (
+                            <tr key={`${score.date}-${score.wpm}-${index}`} className="border-b hover:bg-muted/50">
+                              <td className="py-2">
+                                {score.date}
+                              </td>
+                              <td className="py-2">
+                                <span className="px-2 py-1 bg-secondary rounded text-xs">
+                                  {score.theme}
+                                </span>
+                              </td>
+                              <td className="py-2 font-medium">{score.wpm}</td>
+                              <td className="py-2">{score.accuracy}%</td>
+                              <td className="py-2 text-destructive">{score.errors}</td>
+                              <td className="py-2">{score.words}</td>
+                              <td className="py-2">{score.duration}s</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={7} className="text-center text-muted-foreground py-8">
+                              No games played yet. Start typing to see your history!
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Achievement Badges (Future Feature) */}
               <Card>
