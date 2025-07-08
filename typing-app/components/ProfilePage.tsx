@@ -10,7 +10,7 @@ import ThemeSelector from './ThemeSelector';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { ChartPieLegend, createChartConfig, createChartData } from './PieChart';
+import { ChartPieLegend, createChartConfig } from './PieChart';
 
 interface ProfileStats {
   wpmMean: number;
@@ -101,12 +101,11 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
   };
 
   // Create chart data for theme distribution pie chart
-  const themeChartData = createChartData(
-    themeStats.map(theme => ({
-      theme: theme.theme,
-      games: theme.count
-    }))
-  );
+  const themeChartData = themeStats.map((theme) => ({
+    theme: theme.theme,
+    games: theme.count,
+    fill: `var(--color-${theme.theme})`
+  }));
 
   const themeChartConfig = createChartConfig(
     themeStats.map((theme, index) => ({
