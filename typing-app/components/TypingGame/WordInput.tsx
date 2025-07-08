@@ -33,6 +33,39 @@ export default function WordInput({
     }
   }, [isGameActive, isGameComplete]);
 
+  // Auto-refocus when clicking anywhere on the page during active game
+  useEffect(() => {
+    const handlePageClick = () => {
+      if (isGameActive && !isGameComplete) {
+        inputRef.current?.focus();
+      }
+    };
+
+    if (isGameActive && !isGameComplete) {
+      document.addEventListener('click', handlePageClick);
+      return () => document.removeEventListener('click', handlePageClick);
+    }
+  }, [isGameActive, isGameComplete]);
+
+  // Auto-refocus on any keypress during active game
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (isGameActive && !isGameComplete) {
+        // Only focus if not already focused and not pressing special keys
+        if (document.activeElement !== inputRef.current && 
+            !e.ctrlKey && !e.altKey && !e.metaKey && 
+            e.key.length === 1) {
+          inputRef.current?.focus();
+        }
+      }
+    };
+
+    if (isGameActive && !isGameComplete) {
+      document.addEventListener('keypress', handleKeyPress);
+      return () => document.removeEventListener('keypress', handleKeyPress);
+    }
+  }, [isGameActive, isGameComplete]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     
@@ -106,7 +139,7 @@ export default function WordInput({
 
   return (
     <div 
-      className="flex flex-col items-center space-y-4 cursor-text" 
+      className="flex flex-col items-center space-y-4 cursor-text min-h-[200px] w-full" 
       onClick={handleFocus}
     >
       {/* Hidden input field - invisible but captures keystrokes */}
@@ -116,11 +149,27 @@ export default function WordInput({
         value={value}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        className="absolute opacity-0 -z-10"
+        onBlur={(e) => {
+          // Prevent blur unless clicking on interactive elements
+          if (isGameActive && !isGameComplete) {
+            const target = e.relatedTarget as HTMLElement;
+            if (!target || (!target.closest('button') && !target.closest('input') && !target.closest('textarea'))) {
+              setTimeout(() => inputRef.current?.focus(), 0);
+            }
+          }
+        }}
+        className="absolute opacity-0 -z-10 pointer-events-none"
         autoComplete="off"
         spellCheck="false"
         aria-label="Typing input"
       />
+      
+      {/* Visual indicator for active input */}
+      {isGameActive && !isGameComplete && (
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-0.5 bg-muted-foreground/30 rounded-full animate-pulse">
+          <div className="w-full h-full bg-chart-4 rounded-full animate-pulse"></div>
+        </div>
+      )}
     </div>
   );
 } 
