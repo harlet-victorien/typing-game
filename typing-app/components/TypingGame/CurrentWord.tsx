@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 interface CompletedWord {
@@ -97,11 +96,7 @@ export default function CurrentWord({
     const completedAndCurrentLines = lines.slice(0, currentLineIndex + 1);
     
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="pt-20 px-8 max-w-screen mx-auto h-[60vh] overflow-y-auto"
-      >
+      <div className="pt-20 px-8 max-w-screen mx-auto h-[60vh] overflow-y-auto">
         <div className="space-y-4">
           {completedAndCurrentLines.map((line, lineIndex) => (
             <div key={lineIndex} className="text-lg font-mono leading-relaxed">
@@ -127,7 +122,7 @@ export default function CurrentWord({
             </div>
           ))}
         </div>
-      </motion.div>
+      </div>
     );
   }
 
@@ -136,29 +131,20 @@ export default function CurrentWord({
   const visibleLines = lines.slice(startLineIndex, startLineIndex + MAX_VISIBLE_LINES);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="pt-20 px-8 max-w-screen mx-auto"
-    >
+    <div className="pt-20 px-8 max-w-screen mx-auto">
       <div className="space-y-6">
         {visibleLines.map((line, lineIndexInVisible) => {
           const actualLineIndex = startLineIndex + lineIndexInVisible;
           const isCurrentLine = actualLineIndex === currentLineIndex;
           
           return (
-            <motion.div
+            <div
               key={actualLineIndex}
               className={`
                 text-2xl font-mono leading-relaxed transition-all duration-300
                 ${isCurrentLine ? 'opacity-100' : 'opacity-50'}
                 ${line.isCompleted ? 'opacity-30' : ''}
               `}
-              animate={{
-                y: line.isCompleted ? -20 : 0,
-                opacity: line.isCompleted ? 0.3 : isCurrentLine ? 1 : 0.5
-              }}
-              transition={{ duration: 0.5 }}
             >
               {line.words.map((word: string, wordInLineIndex: number) => {
                 const globalWordIndex = line.wordIndices[wordInLineIndex];
@@ -166,7 +152,7 @@ export default function CurrentWord({
                 const isCurrentWord = globalWordIndex === currentWordIndex;
 
                 return (
-                  <motion.span
+                  <span
                     key={`${word}-${globalWordIndex}`}
                     className={`
                       inline-block transition-all duration-200 px-1 py-0.5 mx-0.5 rounded
@@ -175,10 +161,6 @@ export default function CurrentWord({
                       ${wordStatus === 'current' ? 'bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700' : ''}
                       ${wordStatus === 'upcoming' ? 'text-gray-600 dark:text-gray-400' : ''}
                     `}
-                    animate={{
-                      scale: isCurrentWord ? 1.05 : 1,
-                    }}
-                    transition={{ duration: 0.2 }}
                   >
                     {isCurrentWord ? (
                       // Current word with letter-by-letter coloring
@@ -186,7 +168,7 @@ export default function CurrentWord({
                         const letterStatus = getCurrentLetterStatus(word, letterIndex);
                         
                         return (
-                          <motion.span
+                          <span
                             key={`${word}-${globalWordIndex}-${letterIndex}`}
                             className={`
                               relative
@@ -195,33 +177,25 @@ export default function CurrentWord({
                               ${letterStatus === 'current' ? 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/30' : ''}
                               ${letterStatus === 'upcoming' ? 'text-gray-800 dark:text-gray-200' : ''}
                             `}
-                            animate={{
-                              scale: letterStatus === 'current' ? 1.1 : 1,
-                            }}
-                            transition={{ duration: 0.2 }}
                           >
                             {letter}
                             {letterStatus === 'current' && (
-                              <motion.div
-                                className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-500"
-                                animate={{ opacity: [1, 0, 1] }}
-                                transition={{ duration: 1, repeat: Infinity }}
-                              />
+                              <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-500 animate-pulse" />
                             )}
-                          </motion.span>
+                          </span>
                         );
                       })
                     ) : (
                       // Completed or upcoming words
                       <span>{word}</span>
                     )}
-                  </motion.span>
+                  </span>
                 );
               })}
-            </motion.div>
+            </div>
           );
         })}
       </div>
-    </motion.div>
+    </div>
   );
 } 
