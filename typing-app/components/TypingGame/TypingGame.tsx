@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import CurrentWord from './CurrentWord';
-import CompletedWords from './CompletedWords';
 import WordInput from './WordInput';
 import { ThemeToggle } from '../ThemeToggle';
 import { useAuth } from '../auth/AuthProvider';
@@ -97,17 +96,6 @@ export default function TypingGame() {
 
   const currentWord = wordList[gameState.currentWordIndex];
   const isGameComplete = gameState.timeRemaining === 0;
-  
-  // Chart data is managed separately and only updates when we explicitly want to refresh
-
-  // Calculate upcoming words for preview
-  const upcomingWords = [
-    wordList[(gameState.currentWordIndex + 1) % wordList.length],
-    wordList[(gameState.currentWordIndex + 2) % wordList.length],
-    wordList[(gameState.currentWordIndex + 3) % wordList.length],
-    wordList[(gameState.currentWordIndex + 4) % wordList.length],
-    wordList[(gameState.currentWordIndex + 5) % wordList.length]
-  ];
 
   // Fetch fresh words from API
   const fetchWords = useCallback(async (theme: string = 'default') => {
@@ -521,37 +509,20 @@ export default function TypingGame() {
             </div>
           )}
 
-          {/* Main typing area - centered with completed words on the left */}
+          {/* Main typing area - paragraph view */}
           <div className="flex justify-center min-h-[calc(60vh-4rem)] relative my-0 overflow-hidden">
-            {/* Completed words - positioned on the left */}
-            {!isGameComplete && (
-              <div className="absolute left-4 pt-32 hidden lg:block">
-                <CompletedWords words={gameState.completedWords} />
-              </div>
-            )}
-            
-            {/* Current typing words - centered */}
-            {!isGameComplete && (
-              <CurrentWord 
-                word={currentWord}
-                currentInput={gameState.currentInput}
-                isActive={gameState.isGameActive}
-                upcomingWords={upcomingWords}
-              />
-            )}
-            
-            {/* Game complete message - centered */}
-            {isGameComplete && (
-              <div className="flex mt-32 justify-center">
-              <Card
-                className="text-4xl font-bold text-foreground bg-secondary backdrop-blur-lg p-4 rounded-lg h-16 items-center justify-center"
-              >
-                ⏰ Time&apos;s Up!
-              </Card>
-              </div>
-            )}
+            {/* Line-based word display */}
+            <CurrentWord 
+              wordList={wordList}
+              currentWordIndex={gameState.currentWordIndex}
+              currentInput={gameState.currentInput}
+              isActive={gameState.isGameActive}
+              completedWords={gameState.completedWords}
+              isGameComplete={isGameComplete}
+            />
           </div>
 
+          {/* Hidden input for capturing keystrokes */}
           <WordInput
             value={gameState.currentInput}
             onChange={handleInputChange}

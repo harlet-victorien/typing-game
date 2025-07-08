@@ -131,18 +131,9 @@ export default function WordInput({
     );
   }
 
-  const handleFocus = () => {
-    if (isGameActive && !isGameComplete) {
-      inputRef.current?.focus();
-    }
-  };
-
   return (
-    <div 
-      className="flex flex-col items-center space-y-4 cursor-text min-h-[200px] w-full" 
-      onClick={handleFocus}
-    >
-      {/* Hidden input field - invisible but captures keystrokes */}
+    <>
+      {/* Hidden input field - completely removed from layout flow */}
       <input
         ref={inputRef}
         type="text"
@@ -158,18 +149,12 @@ export default function WordInput({
             }
           }
         }}
-        className="absolute opacity-0 -z-10 pointer-events-none"
+        className="absolute opacity-0 pointer-events-none"
+        style={{ position: 'fixed', top: '-1000px', left: '-1000px', width: '1px', height: '1px' }}
         autoComplete="off"
         spellCheck="false"
         aria-label="Typing input"
       />
-      
-      {/* Visual indicator for active input */}
-      {isGameActive && !isGameComplete && (
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-0.5 bg-muted-foreground/30 rounded-full animate-pulse">
-          <div className="w-full h-full bg-chart-4 rounded-full animate-pulse"></div>
-        </div>
-      )}
-    </div>
+    </>
   );
 } 

@@ -1,121 +1,227 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
-interface CurrentWordProps {
+interface CompletedWord {
   word: string;
-  currentInput: string;
-  isActive: boolean;
-  upcomingWords?: string[];
+  timestamp: number;
+  isCorrect: boolean;
 }
 
-export default function CurrentWord({ word, currentInput, isActive, upcomingWords = [] }: CurrentWordProps) {
+interface CurrentWordProps {
+  wordList: string[];
+  currentWordIndex: number;
+  currentInput: string;
+  isActive: boolean;
+  completedWords: CompletedWord[];
+  isGameComplete?: boolean;
+}
+
+interface Line {
+  words: string[];
+  wordIndices: number[];
+  isCompleted: boolean;
+}
+
+export default function CurrentWord({ 
+  wordList, 
+  currentWordIndex, 
+  currentInput, 
+  isActive, 
+  completedWords,
+  isGameComplete = false
+}: CurrentWordProps) {
+  const [lines, setLines] = useState<Line[]>([]);
+  const [currentLineIndex, setCurrentLineIndex] = useState(0);
+
+  // Calculate words per line based on screen width and word length
+  // Assuming average word length and container width
+  const WORDS_PER_LINE = 12;
+  const MAX_VISIBLE_LINES = 4;
+
+  // Generate lines from word list
+  useEffect(() => {
+    const newLines: Line[] = [];
+    for (let i = 0; i < wordList.length; i += WORDS_PER_LINE) {
+      const lineWords = wordList.slice(i, i + WORDS_PER_LINE);
+      const wordIndices = Array.from({ length: lineWords.length }, (_, idx) => i + idx);
+      newLines.push({
+        words: lineWords,
+        wordIndices,
+        isCompleted: false
+      });
+    }
+    setLines(newLines);
+  }, [wordList]);
+
+  // Update current line and completion status
+  useEffect(() => {
+    if (lines.length === 0) return;
+
+    const newCurrentLineIndex = Math.floor(currentWordIndex / WORDS_PER_LINE);
+    setCurrentLineIndex(newCurrentLineIndex);
+
+    // Mark completed lines
+    setLines(prevLines => 
+      prevLines.map((line, index) => ({
+        ...line,
+        isCompleted: index < newCurrentLineIndex
+      }))
+    );
+  }, [currentWordIndex, lines.length]);
+
+  const getWordStatus = (wordIndex: number) => {
+    if (wordIndex < currentWordIndex) {
+      const completedWord = completedWords[wordIndex];
+      return completedWord?.isCorrect ? 'completed-correct' : 'completed-incorrect';
+    } else if (wordIndex === currentWordIndex) {
+      return 'current';
+    } else {
+      return 'upcoming';
+    }
+  };
+
+  const getCurrentLetterStatus = (word: string, letterIndex: number) => {
+    if (letterIndex < currentInput.length) {
+      return currentInput[letterIndex] === word[letterIndex] ? 'correct' : 'incorrect';
+    } else if (letterIndex === currentInput.length && isActive) {
+      return 'current';
+    }
+    return 'upcoming';
+  };
+
+  // Show only started lines in completion view
+  if (isGameComplete) {
+    // Filter to show only lines that have been started (up to current line + 1)
+    const completedAndCurrentLines = lines.slice(0, currentLineIndex + 1);
+    
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="pt-20 px-8 max-w-screen mx-auto h-[60vh] overflow-y-auto"
+      >
+        <div className="space-y-4">
+          {completedAndCurrentLines.map((line, lineIndex) => (
+            <div key={lineIndex} className="text-lg font-mono leading-relaxed">
+              {line.words.map((word, wordInLineIndex) => {
+                const globalWordIndex = line.wordIndices[wordInLineIndex];
+                const wordStatus = getWordStatus(globalWordIndex);
+                
+                return (
+                  <span
+                    key={`${word}-${globalWordIndex}`}
+                    className={`
+                      inline-block px-1 py-0.5 mx-0.5 rounded
+                      ${wordStatus === 'completed-correct' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : ''}
+                      ${wordStatus === 'completed-incorrect' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : ''}
+                      ${wordStatus === 'current' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' : ''}
+                      ${wordStatus === 'upcoming' ? 'text-muted-foreground' : ''}
+                    `}
+                  >
+                    {word}
+                  </span>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Main typing view - show limited lines with current line prominent
+  const startLineIndex = Math.max(0, currentLineIndex);
+  const visibleLines = lines.slice(startLineIndex, startLineIndex + MAX_VISIBLE_LINES);
+
   return (
     <motion.div
-      key={word}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      className="flex flex-col pt-20 items-center space-y-4 overflow-hidden max-h-[calc(60vh-4rem)]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="pt-20 px-8 max-w-screen mx-auto"
     >
-      {/* Current Word - Largest */}
-      <div className="text-6xl font-mono font-bold tracking-wider">
-        {word.split('').map((letter, index) => {
-          let status = 'upcoming';
+      <div className="space-y-6">
+        {visibleLines.map((line, lineIndexInVisible) => {
+          const actualLineIndex = startLineIndex + lineIndexInVisible;
+          const isCurrentLine = actualLineIndex === currentLineIndex;
           
-          if (index < currentInput.length) {
-            status = currentInput[index] === letter ? 'correct' : 'incorrect';
-          } else if (index === currentInput.length && isActive) {
-            status = 'current';
-          }
-
           return (
-            <motion.span
-              key={`${word}-${index}`}
+            <motion.div
+              key={actualLineIndex}
               className={`
-                relative transition-all duration-200
-                ${status === 'correct' ? 'text-chart-2' : ''}
-                ${status === 'incorrect' ? 'text-destructive bg-destructive/10' : ''}
-                ${status === 'current' ? 'text-chart-4' : ''}
-                ${status === 'upcoming' ? 'text-foreground' : ''}
+                text-2xl font-mono leading-relaxed transition-all duration-300
+                ${isCurrentLine ? 'opacity-100' : 'opacity-50'}
+                ${line.isCompleted ? 'opacity-30' : ''}
               `}
               animate={{
-                scale: status === 'current' ? 1.1 : 1,
+                y: line.isCompleted ? -20 : 0,
+                opacity: line.isCompleted ? 0.3 : isCurrentLine ? 1 : 0.5
               }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.5 }}
             >
-              {letter}
-              {status === 'current' && (
-                <motion.div
-                  className="absolute -bottom-2 left-0 right-0 h-1 bg-chart-4"
-                  animate={{ opacity: [1, 0, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                />
-              )}
-            </motion.span>
+              {line.words.map((word: string, wordInLineIndex: number) => {
+                const globalWordIndex = line.wordIndices[wordInLineIndex];
+                const wordStatus = getWordStatus(globalWordIndex);
+                const isCurrentWord = globalWordIndex === currentWordIndex;
+
+                return (
+                  <motion.span
+                    key={`${word}-${globalWordIndex}`}
+                    className={`
+                      inline-block transition-all duration-200 px-1 py-0.5 mx-0.5 rounded
+                      ${wordStatus === 'completed-correct' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400' : ''}
+                      ${wordStatus === 'completed-incorrect' ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400' : ''}
+                      ${wordStatus === 'current' ? 'bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700' : ''}
+                      ${wordStatus === 'upcoming' ? 'text-gray-600 dark:text-gray-400' : ''}
+                    `}
+                    animate={{
+                      scale: isCurrentWord ? 1.05 : 1,
+                    }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {isCurrentWord ? (
+                      // Current word with letter-by-letter coloring
+                      word.split('').map((letter: string, letterIndex: number) => {
+                        const letterStatus = getCurrentLetterStatus(word, letterIndex);
+                        
+                        return (
+                          <motion.span
+                            key={`${word}-${globalWordIndex}-${letterIndex}`}
+                            className={`
+                              relative
+                              ${letterStatus === 'correct' ? 'text-green-600 dark:text-green-400' : ''}
+                              ${letterStatus === 'incorrect' ? 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/30' : ''}
+                              ${letterStatus === 'current' ? 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/30' : ''}
+                              ${letterStatus === 'upcoming' ? 'text-gray-800 dark:text-gray-200' : ''}
+                            `}
+                            animate={{
+                              scale: letterStatus === 'current' ? 1.1 : 1,
+                            }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            {letter}
+                            {letterStatus === 'current' && (
+                              <motion.div
+                                className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-500"
+                                animate={{ opacity: [1, 0, 1] }}
+                                transition={{ duration: 1, repeat: Infinity }}
+                              />
+                            )}
+                          </motion.span>
+                        );
+                      })
+                    ) : (
+                      // Completed or upcoming words
+                      <span>{word}</span>
+                    )}
+                  </motion.span>
+                );
+              })}
+            </motion.div>
           );
         })}
       </div>
-
-      {/* Next Word - Medium Size */}
-      {upcomingWords[0] && (
-        <motion.div 
-          className="text-5xl font-mono font-medium tracking-wide text-foreground opacity-60"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 0.6, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          {upcomingWords[0]}
-        </motion.div>
-      )}
-
-      {/* Second Next Word - Small Size */}
-      {upcomingWords[1] && (
-        <motion.div 
-          className="text-4xl font-mono tracking-wide text-foreground opacity-40"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 0.4, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          {upcomingWords[1]}
-        </motion.div>
-      )}
-
-      {/* Third Next Word - Smaller Size */}
-      {upcomingWords[2] && (
-        <motion.div 
-          className="text-3xl font-mono tracking-wide text-foreground opacity-30"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 0.3, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          {upcomingWords[2]}
-        </motion.div>
-      )}
-
-      {/* Fourth Next Word - Even Smaller Size */}
-      {upcomingWords[3] && (
-        <motion.div 
-          className="text-2xl font-mono tracking-wide text-foreground opacity-25"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 0.25, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          {upcomingWords[3]}
-        </motion.div>
-      )}
-
-      {/* Fifth Next Word - Smallest Size */}
-      {upcomingWords[4] && (
-        <motion.div 
-          className="text-xl font-mono tracking-wide text-foreground opacity-20"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 0.2, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          {upcomingWords[4]}
-        </motion.div>
-      )}
     </motion.div>
   );
 } 
