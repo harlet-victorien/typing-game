@@ -262,7 +262,7 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
               )}
 
               {/* Score History Table */}
-              <Card>
+              <Card className='max-h-128 overflow-y-auto'>
                 <CardHeader>
                   <CardTitle>Score History</CardTitle>
                 </CardHeader>
@@ -308,37 +308,6 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
                         )}
                       </tbody>
                     </table>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Achievement Badges (Future Feature) */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Achievements</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg">
-                      <div className="text-2xl mb-2">🚀</div>
-                      <div className="text-sm text-center">Speed Demon</div>
-                      <div className="text-xs text-muted-foreground">60+ WPM</div>
-                    </div>
-                    <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg opacity-50">
-                      <div className="text-2xl mb-2">🎯</div>
-                      <div className="text-sm text-center">Accuracy Master</div>
-                      <div className="text-xs text-muted-foreground">95+ Accuracy</div>
-                    </div>
-                    <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg opacity-50">
-                      <div className="text-2xl mb-2">📚</div>
-                      <div className="text-sm text-center">Bookworm</div>
-                      <div className="text-xs text-muted-foreground">1000+ Words</div>
-                    </div>
-                    <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg opacity-50">
-                      <div className="text-2xl mb-2">🔥</div>
-                      <div className="text-sm text-center">Streak Master</div>
-                      <div className="text-xs text-muted-foreground">7 Day Streak</div>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
