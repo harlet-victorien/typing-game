@@ -78,7 +78,7 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
 
   const fetchScoreHistory = async () => {
     try {
-      const response = await fetch(`/api/scores?user_id=${user?.id}&limit=50`);
+      const response = await fetch(`/api/scores?user_id=${user?.id}&limit=200`);
       if (response.ok) {
         const data = await response.json();
         setScoreHistory(data.scoreHistory || []);

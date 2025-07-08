@@ -224,7 +224,7 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
     } finally {
       setSavingScore(false);
     }
-  }, [user, scoreSaved, savingScore]);
+  }, [user, scoreSaved, savingScore, selectedTheme]);
 
   const stopGame = useCallback(() => {
     console.log('Stop game called - not saving score (incomplete session)');
