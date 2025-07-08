@@ -128,6 +128,11 @@ export default function TypingGame() {
     }
   }, []);
 
+  // Fetch words when component mounts or theme changes
+  useEffect(() => {
+    fetchWords(selectedTheme);
+  }, [selectedTheme, fetchWords]);
+
   const startGame = useCallback(async () => {
     // Fetch fresh words before starting the game
     await fetchWords(selectedTheme);
