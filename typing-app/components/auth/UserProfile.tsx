@@ -28,50 +28,78 @@ export default function UserProfile({ onShowProfile }: UserProfileProps) {
     <div className="relative">
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
+        className="flex items-center space-x-3 px-4 py-3 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10 hover:from-primary/20 hover:to-secondary/20 transition-all duration-200 border border-primary/20 shadow-sm"
       >
-        <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
+        <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-full flex items-center justify-center text-lg font-bold shadow-sm">
           {user.email?.[0]?.toUpperCase() || 'U'}
         </div>
-        <span className="text-sm text-foreground">
-          {user.email}
-        </span>
+        <div className="flex flex-col items-start">
+          <span className="text-sm font-medium text-foreground">
+            {user.email?.split('@')[0] || 'User'}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            Click for profile
+          </span>
+        </div>
+        <div className="text-xs text-muted-foreground">▼</div>
       </button>
 
       {isDropdownOpen && (
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          className="absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-lg border border-border z-50"
+          initial={{ opacity: 0, y: -10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+          className="absolute right-0 mt-3 w-64 bg-card rounded-xl shadow-xl border border-border z-50 backdrop-blur-sm"
         >
-          <div className="p-4 border-b border-border">
-            <p className="text-sm font-medium text-foreground">
-              Signed in as
-            </p>
-            <p className="text-sm text-muted-foreground truncate">
-              {user.email}
-            </p>
+          <div className="p-5 border-b border-border">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-full flex items-center justify-center text-xl font-bold shadow-sm">
+                {user.email?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <div>
+                <p className="text-base font-semibold text-foreground">
+                  {user.email?.split('@')[0] || 'User'}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user.email}
+                </p>
+              </div>
+            </div>
+            
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              <div className="bg-muted/50 rounded-lg p-2 text-center">
+                <div className="text-xs text-muted-foreground">Sessions</div>
+                <div className="text-sm font-semibold text-foreground">-</div>
+              </div>
+              <div className="bg-muted/50 rounded-lg p-2 text-center">
+                <div className="text-xs text-muted-foreground">Best WPM</div>
+                <div className="text-sm font-semibold text-foreground">-</div>
+              </div>
+            </div>
           </div>
-          <div className="p-2 space-y-1">
+          
+          <div className="p-3 space-y-2">
             {onShowProfile && (
               <Button
                 onClick={() => {
                   onShowProfile();
                   setIsDropdownOpen(false);
                 }}
-                variant="secondary"
+                variant="default"
+                size="sm"
                 className="w-full justify-start"
               >
-                👤 View Profile
+                📊 View Full Profile & Stats
               </Button>
             )}
             <Button
               onClick={handleSignOut}
-              variant="secondary"
-              className="w-full justify-start"
+              variant="outline"
+              size="sm"
+              className="w-full justify-start text-muted-foreground hover:text-foreground"
             >
-              Sign Out
+              🚪 Sign Out
             </Button>
           </div>
         </motion.div>

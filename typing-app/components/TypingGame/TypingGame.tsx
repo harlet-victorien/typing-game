@@ -431,17 +431,19 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
           </div>
           
           <div className="flex items-center space-x-4">
+            <ThemeToggle />
             {user ? (
               <UserProfile onShowProfile={onShowProfile} />
             ) : (
               <Button
                 onClick={() => setShowAuthModal(true)}
-                variant="ghost"
+                variant="default"
+                size="lg"
+                className="px-6 py-2"
               >
-                Sign In
+                🚀 Sign In to Track Progress
               </Button>
             )}
-            <ThemeToggle />
           </div>
         </div>
 
