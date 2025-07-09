@@ -418,20 +418,20 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
             {user && (
               <Button
                 onClick={onShowProfile}
-                variant="secondary"
+                variant="outline"
               >
                 👤 Profile
               </Button>
             )}
             <Button
               onClick={() => setShowThemeSelector(true)}
-              variant="outline"
+              variant="ghost"
             >
               🎨 Themes
             </Button>
             <Button
               onClick={() => setShowSoundSettings(true)}
-              variant="outline"
+              variant="ghost"
             >
               🔊 Sounds
             </Button>
