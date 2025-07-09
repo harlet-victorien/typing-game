@@ -14,6 +14,8 @@ import { Button } from '../ui/button';
 import { ChartLineDefault } from '../LineChart';
 import { Card } from '../ui/card';
 import { CardFooter } from '@/components/ui/card';
+import { useAudio } from '../audio/AudioProvider';
+import SoundSettings from '../audio/SoundSettings';
 
 // Default fallback words in case API fails
 const FALLBACK_WORDS = [
@@ -70,6 +72,7 @@ interface TypingGameProps {
 
 export default function TypingGame({ onShowProfile }: TypingGameProps) {
   const { user } = useAuth();
+  const { playKeystroke, playSpace, playError, playComplete } = useAudio();
   const [gameState, setGameState] = useState<GameState>({
     currentWordIndex: 0,
     completedWords: [],
@@ -87,6 +90,7 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showThemeSelector, setShowThemeSelector] = useState(false);
+  const [showSoundSettings, setShowSoundSettings] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState('default');
   const [scoreSaved, setScoreSaved] = useState(false);
   const [savingScore, setSavingScore] = useState(false);
@@ -275,24 +279,32 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
 
   const handleKeyPress = useCallback((isCorrect: boolean) => {
     if (!isCorrect) {
+      playError();
       setGameState(prev => ({
         ...prev,
         errors: prev.errors + 1
       }));
+    } else {
+      playKeystroke();
     }
-  }, []);
+  }, [playError, playKeystroke]);
 
   const handleKeyDown = useCallback((key: string) => {
     if (!gameState.isGameActive || isGameComplete) return;
 
     // Handle spacebar for word completion
     if (key === ' ') {
+      playSpace();
       const isCorrect = gameState.currentInput === currentWord;
       const newCompletedWord = {
         word: currentWord,
         timestamp: Date.now(),
         isCorrect: isCorrect
       };
+
+      if (isCorrect) {
+        playComplete();
+      }
 
       setGameState(prev => ({
         ...prev,
@@ -301,7 +313,7 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
         currentInput: ''
       }));
     }
-  }, [gameState.isGameActive, gameState.currentInput, isGameComplete, currentWord, wordList.length]);
+  }, [gameState.isGameActive, gameState.currentInput, isGameComplete, currentWord, wordList.length, playSpace, playComplete]);
 
   // Countdown timer effect - only start when user has started typing
   useEffect(() => {
@@ -410,6 +422,12 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
             >
               🎨 Themes
             </Button>
+            <Button
+              onClick={() => setShowSoundSettings(true)}
+              variant="outline"
+            >
+              🔊 Sounds
+            </Button>
           </div>
           
           <div className="flex items-center space-x-4">
@@ -475,13 +493,17 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
           currentTheme={selectedTheme}
           onThemeChange={setSelectedTheme}
         />
+        <SoundSettings 
+          isOpen={showSoundSettings} 
+          onClose={() => setShowSoundSettings(false)}
+        />
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full"
         >
-         <div className="flex flex-col items-center justify-center h-[calc(40vh-4rem)] relative mt-12">
+         <div className="flex flex-col items-center justify-center h-[calc(40vh-4rem)] relative mt-20">
               <div className="w-full h-full">
                 <Card className="w-full h-full border-none bg-transparent shadow-none backdrop-blur-none">
                   <ChartLineDefault data={chartData} />
