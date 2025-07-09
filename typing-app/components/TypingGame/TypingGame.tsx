@@ -7,7 +7,6 @@ import WordInput from './WordInput';
 import { ThemeToggle } from '../ThemeToggle';
 import { useAuth } from '../auth/AuthProvider';
 import AuthModal from '../auth/AuthModal';
-import UserProfile from '../auth/UserProfile';
 import Leaderboard from '../Leaderboard';
 import ThemeSelector from '../ThemeSelector';
 import { Button } from '../ui/button';
@@ -416,6 +415,14 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
             >
               🏆 Leaderboard
             </Button>
+            {user && (
+              <Button
+                onClick={onShowProfile}
+                variant="default"
+              >
+                👤 Profile
+              </Button>
+            )}
             <Button
               onClick={() => setShowThemeSelector(true)}
               variant="outline"
@@ -431,19 +438,15 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
           </div>
           
           <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            {user ? (
-              <UserProfile onShowProfile={onShowProfile} />
-            ) : (
+            {!user && (
               <Button
                 onClick={() => setShowAuthModal(true)}
                 variant="default"
-                size="lg"
-                className="px-6 py-2"
               >
-                🚀 Sign In to Track Progress
+                Sign In
               </Button>
             )}
+            <ThemeToggle />
           </div>
         </div>
 
