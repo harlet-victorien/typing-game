@@ -418,7 +418,7 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
             {user && (
               <Button
                 onClick={onShowProfile}
-                variant="default"
+                variant="secondary"
               >
                 👤 Profile
               </Button>
