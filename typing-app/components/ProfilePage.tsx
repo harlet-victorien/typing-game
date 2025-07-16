@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from './auth/AuthProvider';
 import AuthModal from './auth/AuthModal';
@@ -56,16 +56,7 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
   const [scoreHistory, setScoreHistory] = useState<ScoreRecord[]>([]);
   const [themeStats, setThemeStats] = useState<ThemeStats[]>([]);
 
-  // Fetch user stats and score history
-  useEffect(() => {
-    if (user) {
-      fetchUserStats();
-      fetchScoreHistory();
-      fetchThemeStats();
-    }
-  }, [user]);
-
-  const fetchUserStats = async () => {
+  const fetchUserStats = useCallback(async () => {
     try {
       const response = await fetch(`/api/scores?user_id=${user?.id}&summary=true`);
       if (response.ok) {
@@ -75,9 +66,9 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
     } catch (error) {
       console.error('Error fetching user stats:', error);
     }
-  };
+  }, [user, stats]);
 
-  const fetchScoreHistory = async () => {
+  const fetchScoreHistory = useCallback(async () => {
     try {
       const response = await fetch(`/api/scores?user_id=${user?.id}&limit=200`);
       if (response.ok) {
@@ -87,9 +78,9 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
     } catch (error) {
       console.error('Error fetching score history:', error);
     }
-  };
+  }, [user]);
 
-  const fetchThemeStats = async () => {
+  const fetchThemeStats = useCallback(async () => {
     try {
       const response = await fetch(`/api/scores?user_id=${user?.id}&themes=true`);
       if (response.ok) {
@@ -99,7 +90,16 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
     } catch (error) {
       console.error('Error fetching theme stats:', error);
     }
-  };
+  }, [user]);
+
+  // Fetch user stats and score history
+  useEffect(() => {
+    if (user) {
+      fetchUserStats();
+      fetchScoreHistory();
+      fetchThemeStats();
+    }
+  }, [user, fetchUserStats, fetchScoreHistory, fetchThemeStats]);
 
   // Create chart data for theme distribution pie chart
   const themeChartData = themeStats.map((theme) => ({

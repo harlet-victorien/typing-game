@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 
 interface AudioContextType {
   isEnabled: boolean;
@@ -37,12 +37,12 @@ export function AudioProvider({ children }: AudioProviderProps) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Audio files mapping
-  const soundFiles = {
+  const soundFiles = useMemo(() => ({
     keystroke: ['/sounds/keystroke-1.mp3', '/sounds/keystroke-2.mp3', '/sounds/keystroke-3.mp3'],
     space: ['/sounds/space.mp3'],
     error: ['/sounds/error.mp3'],
     complete: ['/sounds/complete.mp3']
-  };
+  }), []);
 
   // Initialize audio context and load sounds
   const initializeAudio = useCallback(async () => {
@@ -87,7 +87,7 @@ export function AudioProvider({ children }: AudioProviderProps) {
       console.warn('Failed to initialize audio:', error);
       setIsEnabled(false);
     }
-  }, [isInitialized, isEnabled, volume, isMuted]);
+  }, [isInitialized, isEnabled, volume, isMuted, soundFiles]);
 
   // Play sound with pooling
   const playSound = useCallback((soundKey: string) => {
