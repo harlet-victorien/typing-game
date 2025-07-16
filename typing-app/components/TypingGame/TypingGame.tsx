@@ -15,6 +15,7 @@ import { Card } from '../ui/card';
 import { CardFooter } from '@/components/ui/card';
 import { useAudio } from '../audio/AudioProvider';
 import SoundSettings from '../audio/SoundSettings';
+import { Trophy, User, Palette, Volume2, LogIn } from 'lucide-react';
 
 // Default fallback words in case API fails
 const FALLBACK_WORDS = [
@@ -412,28 +413,36 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
             <Button
               onClick={() => setShowLeaderboard(true)}
               variant="default"
+              size="icon"
+              aria-label="Leaderboard"
             >
-              🏆 Leaderboard
+              <Trophy />
             </Button>
             {user && (
               <Button
                 onClick={onShowProfile}
                 variant="outline"
+                size="icon"
+                aria-label="Profile"
               >
-                👤 Profile
+                <User />
               </Button>
             )}
             <Button
               onClick={() => setShowThemeSelector(true)}
               variant="ghost"
+              size="icon"
+              aria-label="Themes"
             >
-              🎨 Themes
+              <Palette />
             </Button>
             <Button
               onClick={() => setShowSoundSettings(true)}
               variant="ghost"
+              size="icon"
+              aria-label="Sounds"
             >
-              🔊 Sounds
+              <Volume2 />
             </Button>
           </div>
           
@@ -442,8 +451,10 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
               <Button
                 onClick={() => setShowAuthModal(true)}
                 variant="default"
+                size="icon"
+                aria-label="Sign In"
               >
-                Sign In
+                <LogIn />
               </Button>
             )}
             <ThemeToggle />
