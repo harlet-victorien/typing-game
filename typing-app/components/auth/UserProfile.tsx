@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from './AuthProvider';
 import { Button } from '../ui/button';
+import { User } from 'lucide-react';
 
 interface UserProfileProps {
   onShowProfile?: () => void;
@@ -28,20 +29,10 @@ export default function UserProfile({ onShowProfile }: UserProfileProps) {
     <div className="relative">
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="flex items-center space-x-3 px-4 py-3 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10 hover:from-primary/20 hover:to-secondary/20 transition-all duration-200 border border-primary/20 shadow-sm"
+        className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm hover:brightness-110 transition-all duration-200 border border-primary/20 focus:outline-none focus:ring-2 focus:ring-ring"
+        aria-label="Open profile menu"
       >
-        <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-full flex items-center justify-center text-lg font-bold shadow-sm">
-          {user.email?.[0]?.toUpperCase() || 'U'}
-        </div>
-        <div className="flex flex-col items-start">
-          <span className="text-sm font-medium text-foreground">
-            {user.email?.split('@')[0] || 'User'}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            Click for profile
-          </span>
-        </div>
-        <div className="text-xs text-muted-foreground">▼</div>
+        {user.email?.[0]?.toUpperCase() || <User className="w-6 h-6" />}
       </button>
 
       {isDropdownOpen && (
