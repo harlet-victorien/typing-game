@@ -11,6 +11,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ChartPieLegend, createChartConfig } from './PieChart';
+import { Trophy, Palette, LogIn, User, ArrowLeft } from 'lucide-react';
 
 interface ProfileStats {
   wpmMean: number;
@@ -126,14 +127,18 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
             <Button
               onClick={() => setShowLeaderboard(true)}
               variant="default"
+              size="icon"
+              aria-label="Leaderboard"
             >
-              🏆 Leaderboard
+              <Trophy />
             </Button>
             <Button
               onClick={() => setShowThemeSelector(true)}
               variant="outline"
+              size="icon"
+              aria-label="Themes"
             >
-              🎨 Themes
+              <Palette />
             </Button>
           </div>
           
@@ -144,8 +149,10 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
               <Button
                 onClick={() => setShowAuthModal(true)}
                 variant="ghost"
+                size="icon"
+                aria-label="Sign In"
               >
-                Sign In
+                <LogIn />
               </Button>
             )}
             <ThemeToggle />
@@ -159,16 +166,18 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
               <Button
                 onClick={onBackToGame}
                 variant="outline"
-                size="lg"
+                size="icon"
+                aria-label="Back to Game"
               >
-                ← Back to Game
+                <ArrowLeft />
               </Button>
             )}
             <Button
               variant="default"
-              size="lg"
+              size="icon"
+              aria-label="Profile"
             >
-              👤 Profile
+              <User />
             </Button>
           </div>
         </div>
