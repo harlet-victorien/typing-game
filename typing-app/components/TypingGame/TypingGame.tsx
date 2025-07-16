@@ -402,6 +402,23 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
     }
   }, [gameState.timeRemaining, gameState.isGameActive, gameState, user, saveScore, scoreSaved]);
 
+  // Add Enter key support for starting/stopping the game
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        if (!gameState.isGameActive && !isGameComplete) {
+          startGame();
+        } else if (gameState.isGameActive && !isGameComplete) {
+          stopGame();
+        } else if (isGameComplete) {
+          startGame();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [gameState.isGameActive, isGameComplete, startGame, stopGame]);
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 transition-colors duration-200 relative overflow-hidden">
 
@@ -470,6 +487,7 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
               size="lg"
             >
               🚀 Start Typing Challenge
+              <span className="ml-2 text-xs text-primary-foreground">(Press Enter)</span>
             </Button>
           )}
 
@@ -480,6 +498,7 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
               size="lg"
             >
               ⏹️ End Session
+              <span className="ml-2 text-xs text-primary-foreground">(Press Enter)</span>
             </Button>
           )}
 
@@ -490,6 +509,7 @@ export default function TypingGame({ onShowProfile }: TypingGameProps) {
               size="lg"
             >
               🎯 Play Again
+              <span className="ml-2 text-xs text-foreground">(Press Enter)</span>
             </Button>
           )}
         </div>
