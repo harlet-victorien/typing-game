@@ -11,7 +11,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ChartPieLegend, createChartConfig } from './PieChart';
-import { Trophy, Palette, LogIn, User, ArrowLeft } from 'lucide-react';
+import { Trophy, Palette, LogIn, ArrowLeft } from 'lucide-react';
 
 interface ProfileStats {
   wpmMean: number;
@@ -172,13 +172,6 @@ export default function ProfilePage({ onBackToGame }: ProfilePageProps) {
                 <ArrowLeft />
               </Button>
             )}
-            <Button
-              variant="default"
-              size="icon"
-              aria-label="Profile"
-            >
-              <User />
-            </Button>
           </div>
         </div>
 
