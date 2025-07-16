@@ -72,7 +72,7 @@ export default function ThemeSelector({ isOpen, onClose, currentTheme, onThemeCh
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-card backdrop-blur-lg p-8 rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto border border-border"
+        className="bg-card text-card-foreground p-8 rounded-xl shadow-sm w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto border border-border/40 flex flex-col gap-6"
       >
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -99,11 +99,11 @@ export default function ThemeSelector({ isOpen, onClose, currentTheme, onThemeCh
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
               onClick={() => handleThemeSelect(theme.id)}
-              className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all hover:bg-accent/20 ${
+              className={`flex items-center justify-between p-4 rounded-xl border border-border/40 bg-card cursor-pointer transition-all ${
                 currentTheme === theme.id
-                  ? 'bg-accent/20 border-accent'
-                  : 'bg-secondary border-border'
-              }`}
+                  ? 'border-accent bg-accent/10'
+                  : ''
+              } hover:bg-accent/5`}
             >
               <div className="flex items-center space-x-4">
                 <div className="text-2xl">

@@ -33,7 +33,7 @@ export default function SoundSettings({ isOpen, onClose }: SoundSettingsProps) {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-card backdrop-blur-lg p-8 rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[80vh] overflow-y-auto border border-border"
+        className="bg-card text-card-foreground p-8 rounded-xl shadow-sm w-full max-w-md mx-4 max-h-[80vh] overflow-y-auto border border-border/40 flex flex-col gap-6"
       >
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -54,7 +54,7 @@ export default function SoundSettings({ isOpen, onClose }: SoundSettingsProps) {
 
         {/* Enable/Disable Audio */}
         <div className="space-y-4 mb-6">
-          <div className="flex items-center justify-between p-4 rounded-lg border bg-secondary border-border">
+          <div className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-card">
             <div className="flex items-center space-x-3">
               <Settings className="w-5 h-5 text-muted-foreground" />
               <div>
@@ -76,7 +76,7 @@ export default function SoundSettings({ isOpen, onClose }: SoundSettingsProps) {
 
         {/* Volume Control */}
         <div className="space-y-4 mb-6">
-          <div className="p-4 rounded-lg border bg-secondary border-border">
+          <div className="p-4 rounded-xl border border-border/40 bg-card">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 {isMuted ? <VolumeX className="w-5 h-5 text-muted-foreground" /> : <Volume2 className="w-5 h-5 text-muted-foreground" />}
@@ -117,7 +117,7 @@ export default function SoundSettings({ isOpen, onClose }: SoundSettingsProps) {
 
         {/* Sound Preview */}
         <div className="space-y-4 mb-6">
-          <div className="p-4 rounded-lg border bg-secondary border-border">
+          <div className="p-4 rounded-xl border border-border/40 bg-card">
             <div className="mb-4">
               <div className="font-medium text-foreground">Test Sounds</div>
               <div className="text-sm text-muted-foreground">Preview your settings</div>
@@ -146,7 +146,7 @@ export default function SoundSettings({ isOpen, onClose }: SoundSettingsProps) {
         </div>
 
         {/* Info */}
-        <div className="text-sm text-muted-foreground bg-muted/50 p-4 rounded-lg border border-border">
+        <div className="text-sm text-muted-foreground bg-card p-4 rounded-xl border border-border/40">
           <p><strong>💡 Tip:</strong> Keyboard sounds enhance the typing experience and provide audio feedback for each keystroke.</p>
         </div>
       </motion.div>

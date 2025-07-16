@@ -64,14 +64,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 bg-background/30 backdrop-blur-lg flex items-center justify-center z-50"
           onClick={onClose}
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-card border border-border p-8 rounded-lg shadow-xl w-full max-w-md mx-4"
+            className="bg-card text-card-foreground p-8 rounded-xl shadow-sm w-full max-w-md mx-4 border border-border/40 flex flex-col gap-6"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-6">

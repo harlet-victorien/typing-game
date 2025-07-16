@@ -156,10 +156,10 @@ export default function CurrentWord({
                     key={`${word}-${globalWordIndex}`}
                     className={`
                       inline-block transition-all duration-200 px-1 py-0.5 mx-0.5 rounded
-                      ${wordStatus === 'completed-correct' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400' : ''}
-                      ${wordStatus === 'completed-incorrect' ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400' : ''}
-                      ${wordStatus === 'current' ? 'bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700' : ''}
-                      ${wordStatus === 'upcoming' ? 'text-gray-600 dark:text-gray-400' : ''}
+                      ${wordStatus === 'completed-correct' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 border border-transparent' : ''}
+                      ${wordStatus === 'completed-incorrect' ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 border border-transparent' : ''}
+                      ${wordStatus === 'current' ? 'bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700' : 'border border-transparent'}
+                      ${wordStatus === 'upcoming' ? 'text-gray-600 dark:text-gray-400 border border-transparent' : ''}
                     `}
                   >
                     {isCurrentWord ? (
