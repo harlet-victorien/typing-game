@@ -69,7 +69,7 @@
   --accent: var(--rose-quartz);
   --accent-foreground: var(--space-cadet);
   --destructive: #e57373;
-  --border: var(--ultra-violet);
+  --border: transparent;
   --input: var(--ultra-violet);
   --ring: var(--ultra-violet);
   --chart-1: oklch(0.646 0.222 41.116);
@@ -103,7 +103,7 @@
   --accent: var(--pale-dogwood);
   --accent-foreground: var(--space-cadet);
   --destructive: #e57373;
-  --border: var(--rose-quartz);
+  --border: transparent;
   --input: var(--rose-quartz);
   --ring: var(--rose-quartz);
   --chart-1: oklch(0.74 0.1332 269.28);
